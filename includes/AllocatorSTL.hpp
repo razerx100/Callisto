@@ -22,6 +22,21 @@ public:
     AllocatorSTL(std::shared_ptr<Allocator> allocator) noexcept
         : m_allocator{ std::move(allocator) } {}
 
+    AllocatorSTL(const AllocatorSTL& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
+    AllocatorSTL(AllocatorSTL&& alloc) noexcept : m_allocator{ std::move(alloc.m_allocator) } {}
+
+    AllocatorSTL& operator=(AllocatorSTL&& alloc) noexcept {
+        m_allocator = std::move(alloc.m_allocator);
+
+        return *this;
+    }
+
+    AllocatorSTL& operator=(const AllocatorSTL& alloc) noexcept {
+        m_allocator = alloc.m_allocator;
+
+        return *this;
+    }
+
     pointer allocate(size_type size) {
         return static_cast<pointer>(m_allocator->Allocate(size * sizeof(T), alignof(T)));
     }
