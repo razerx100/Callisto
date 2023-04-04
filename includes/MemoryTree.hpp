@@ -32,7 +32,6 @@ public:
 private:
     [[nodiscard]]
     static size_t Align(size_t address, size_t alignment) noexcept;
-
     [[nodiscard]]
     static size_t GetUpperBound2sExponent(size_t size) noexcept;
     [[nodiscard]]
@@ -41,9 +40,9 @@ private:
     ) noexcept;
 
     [[nodiscard]]
-    size_t FindBlockRecursive(size_t size, size_t alignment, size_t nodeIndex) noexcept;
+    size_t FindBlockRecursive(size_t size, size_t alignment, size_t nodeIndex) const noexcept;
 
-    void DeactivateParentsRecursive(size_t nodeIndex) noexcept;
+    void ManageAvailableBlocksRecursive(size_t nodeIndex) noexcept;
 
     template<bool blockSize4>
     void CreateChildren(
@@ -97,6 +96,7 @@ private:
 
 private:
     std::vector<BlockNode> m_memTree;
+    std::vector<size_t> m_availableBlocks;
     size_t m_rootIndex;
 };
 #endif

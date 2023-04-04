@@ -4,6 +4,10 @@
 #include <limits>
 #include <algorithm>
 
+size_t MemoryTree::Align(size_t address, size_t alignment) noexcept {
+    return (address + (alignment - 1u)) & ~(alignment - 1u);
+}
+
 MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept : m_rootIndex{ 0u } {
     assert(size % 4u == 0u && "Not divisible by 4u");
 
@@ -11,17 +15,12 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept : m_rootInd
     size_t previousBlockCount = 0u;
     std::vector<size_t> rootSChildren;
 
-    // The nodes with the capacity of 4 don't need children
     CreateChildren<true>(startingAddress, size, blockSize, previousBlockCount, rootSChildren);
     blockSize <<= 1u;
 
-    // Add nodes after blockSize 4 and until root
     for (; blockSize < size; blockSize <<= 1u)
-        CreateChildren<false>(
-            startingAddress, size, blockSize, previousBlockCount, rootSChildren
-        );
+        CreateChildren<false>(startingAddress, size, blockSize, previousBlockCount, rootSChildren);
 
-    // Add the root node
     MemoryBlock memoryBlock{
         .startingAddress = startingAddress,
         .size = size,
@@ -54,16 +53,21 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept : m_rootInd
     }
 
     m_memTree.emplace_back(root);
+    m_availableBlocks.emplace_back(m_rootIndex);
 }
 
 MemoryTree::MemoryTree(const MemoryTree& memTree) noexcept
-    : m_memTree{ memTree.m_memTree }, m_rootIndex{ memTree.m_rootIndex } {}
+    : m_memTree{ memTree.m_memTree }, m_availableBlocks{ memTree.m_availableBlocks },
+    m_rootIndex{ memTree.m_rootIndex } {}
 
 MemoryTree::MemoryTree(MemoryTree&& memTree) noexcept
-    : m_memTree{ std::move(memTree.m_memTree) }, m_rootIndex{ memTree.m_rootIndex } {}
+    : m_memTree{ std::move(memTree.m_memTree) },
+    m_availableBlocks{ std::move(memTree.m_availableBlocks) },
+    m_rootIndex{ memTree.m_rootIndex } {}
 
 MemoryTree& MemoryTree::operator=(const MemoryTree& memTree) noexcept {
     m_memTree = memTree.m_memTree;
+    m_availableBlocks = memTree.m_availableBlocks;
     m_rootIndex = memTree.m_rootIndex;
 
     return *this;
@@ -71,6 +75,7 @@ MemoryTree& MemoryTree::operator=(const MemoryTree& memTree) noexcept {
 
 MemoryTree& MemoryTree::operator=(MemoryTree&& memTree) noexcept {
     m_memTree = std::move(memTree.m_memTree);
+    m_availableBlocks = std::move(memTree.m_availableBlocks);
     m_rootIndex = memTree.m_rootIndex;
 
     return *this;
@@ -79,7 +84,25 @@ MemoryTree& MemoryTree::operator=(MemoryTree&& memTree) noexcept {
 size_t MemoryTree::Allocate(size_t size, size_t alignment) {
     static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
 
-    size_t blockIndex = FindBlockRecursive(size, alignment, m_rootIndex);
+    size_t blockIndex = nullValue;
+    for (size_t nodeIndex : m_availableBlocks) {
+        blockIndex = FindBlockRecursive(size, alignment, nodeIndex);
+        if (blockIndex != nullValue) {
+            BlockNode& node = m_memTree[blockIndex];
+            MemoryBlock& memBlock = node.block;
+
+            memBlock.available = false;
+
+            auto findIt = std::ranges::find(m_availableBlocks, nodeIndex);
+            m_availableBlocks.erase(findIt);
+
+            const size_t parentIndex = node.parentIndex;
+            if (parentIndex != nullValue)
+                ManageAvailableBlocksRecursive(parentIndex);
+
+            break;
+        }
+    }
 
     if (blockIndex == nullValue) {
         BlockNode& root = m_memTree[m_rootIndex];
@@ -99,24 +122,31 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment) {
     return Align(memBlock.startingAddress, alignment);
 }
 
-size_t MemoryTree::Align(size_t address, size_t alignment) noexcept {
-    return (address + (alignment - 1u)) & ~(alignment - 1u);
-}
-
-void MemoryTree::DeactivateParentsRecursive(size_t nodeIndex) noexcept {
+void MemoryTree::ManageAvailableBlocksRecursive(size_t nodeIndex) noexcept {
     BlockNode& node = m_memTree[nodeIndex];
     MemoryBlock& memBlock = node.block;
     memBlock.available = false;
 
+    for (size_t childIndex : node.childrenIndices) {
+        BlockNode& childNode = m_memTree[childIndex];
+
+        if (childNode.block.available) {
+            auto findIt = std::ranges::find(m_availableBlocks, childIndex);
+
+            if (findIt == std::end(m_availableBlocks))
+                m_availableBlocks.emplace_back(childIndex);
+        }
+    }
+
     if (node.parentIndex != std::numeric_limits<size_t>::max())
-        DeactivateParentsRecursive(node.parentIndex);
+        ManageAvailableBlocksRecursive(node.parentIndex);
 }
 
 size_t MemoryTree::FindBlockRecursive(
     size_t size, size_t alignment, size_t nodeIndex
-) noexcept {
-    BlockNode& node = m_memTree[nodeIndex];
-    MemoryBlock& memBlock = node.block;
+) const noexcept {
+    const BlockNode& node = m_memTree[nodeIndex];
+    const MemoryBlock& memBlock = node.block;
 
     static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
 
@@ -134,14 +164,8 @@ size_t MemoryTree::FindBlockRecursive(
     const size_t alignedSize = GetAlignedSize(memBlock.startingAddress, alignment, size);
 
     const size_t blockSize = GetUpperBound2sExponent(alignedSize);
-    // Disable all of the parents once a child is selected for allocation. Since the parents won't
-    // have enough memory left for allocation. Theoritically dividing them into buddies
-    if (memBlock.available && blockSize == memBlock.size) {
-        memBlock.available = false;
-        DeactivateParentsRecursive(nodeIndex);
-
+    if (memBlock.available && blockSize == memBlock.size)
         return nodeIndex;
-    }
 
     return nullValue;
 }
