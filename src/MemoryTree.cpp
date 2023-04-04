@@ -93,17 +93,19 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment) {
 
             memBlock.available = false;
 
-            auto findIt = std::ranges::find(m_availableBlocks, nodeIndex);
-            m_availableBlocks.erase(findIt);
+            RemoveIndexFromAvailable(nodeIndex);
 
             const size_t parentIndex = node.parentIndex;
-            if (parentIndex != nullValue)
+            if (parentIndex != nullValue) // Value should never be null but still checking
                 ManageAvailableBlocksRecursive(parentIndex);
 
             break;
         }
     }
 
+    // The root-node's size can be non-exponent of 2 but the children are all 2's exponent.
+    // So, if the root is a non-exponent of 2, FindBlockRecursive will return null even if
+    // there is enough space to allocate
     if (blockIndex == nullValue) {
         BlockNode& root = m_memTree[m_rootIndex];
         MemoryBlock& memBlock = root.block;
@@ -112,6 +114,8 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment) {
         if (memBlock.available && alignedSize <= memBlock.size) {
             memBlock.available = false;
             blockIndex = m_rootIndex;
+
+            RemoveIndexFromAvailable(m_rootIndex);
         }
     }
 
@@ -140,6 +144,12 @@ void MemoryTree::ManageAvailableBlocksRecursive(size_t nodeIndex) noexcept {
 
     if (node.parentIndex != std::numeric_limits<size_t>::max())
         ManageAvailableBlocksRecursive(node.parentIndex);
+}
+
+void MemoryTree::RemoveIndexFromAvailable(size_t index) noexcept {
+    auto findIt = std::ranges::find(m_availableBlocks, index);
+    if (findIt != std::end(m_availableBlocks))
+        m_availableBlocks.erase(findIt);
 }
 
 size_t MemoryTree::FindBlockRecursive(

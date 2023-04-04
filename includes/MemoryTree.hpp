@@ -43,6 +43,7 @@ private:
     size_t FindBlockRecursive(size_t size, size_t alignment, size_t nodeIndex) const noexcept;
 
     void ManageAvailableBlocksRecursive(size_t nodeIndex) noexcept;
+    void RemoveIndexFromAvailable(size_t index) noexcept;
 
     template<bool blockSize4>
     void CreateChildren(
