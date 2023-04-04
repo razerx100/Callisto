@@ -42,7 +42,7 @@ public:
     }
 
     void deallocate(pointer ptr, size_type size) {
-        m_allocator->Deallocate(ptr);
+        m_allocator->Deallocate(ptr, size * sizeof(T));
     }
 
     template<typename X, typename... Args>

@@ -16,7 +16,7 @@ public:
     [[nodiscard]]
     void* Allocate(size_t size, size_t alignment);
 
-    void Deallocate(void* ptr) noexcept;
+    void Deallocate(void* ptr, size_t size) noexcept;
 
     [[nodiscard]]
     size_t GetMemorySize() const noexcept;
@@ -24,6 +24,6 @@ public:
 private:
     size_t m_memoryStart;
     size_t m_memorySize;
-    MemoryTreeA m_memTree;
+    MemoryTree m_memTree;
 };
 #endif
