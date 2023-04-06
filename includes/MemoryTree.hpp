@@ -29,6 +29,8 @@ public:
     [[nodiscard]]
     size_t Allocate(size_t size, size_t alignment);
 
+    void Deallocate(size_t address, size_t size) noexcept;
+
 private:
     [[nodiscard]]
     static size_t Align(size_t address, size_t alignment) noexcept;
@@ -41,8 +43,13 @@ private:
 
     [[nodiscard]]
     size_t FindBlockRecursive(size_t size, size_t alignment, size_t nodeIndex) const noexcept;
+    [[nodiscard]]
+    size_t FindBlockRecursiveAddress(
+        size_t address, size_t size, size_t nodeIndex
+    ) const noexcept;
 
     void ManageAvailableBlocksRecursive(size_t nodeIndex) noexcept;
+    void ManageUnavailableBlocksRecursive(size_t nodeIndex) noexcept;
     void RemoveIndexFromAvailable(size_t index) noexcept;
 
     template<bool blockSize4>

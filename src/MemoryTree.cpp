@@ -103,7 +103,7 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment) {
         }
     }
 
-    // The root-node's size can be non-exponent of 2 but the children are all 2's exponent.
+    // The root-node's size can be a non-exponent of 2 but the children are all 2's exponent.
     // So, if the root is a non-exponent of 2, FindBlockRecursive will return null even if
     // there is enough space to allocate
     if (blockIndex == nullValue) {
@@ -191,4 +191,32 @@ size_t MemoryTree::GetAlignedSize(size_t startingAddress, size_t alignment, size
     const size_t alignedAddress = Align(startingAddress, alignment);
 
     return size + (alignedAddress - startingAddress);
+}
+
+void MemoryTree::Deallocate(size_t address, size_t size) noexcept {
+    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
+
+    const size_t blockIndex = FindBlockRecursiveAddress(address, size, m_rootIndex);
+
+    assert(blockIndex != nullValue && "Can't find the block for deallocation.");
+
+    BlockNode& node = m_memTree[blockIndex];
+    MemoryBlock& memBlock = node.block;
+    memBlock.available = true;
+
+    const size_t parentIndex = node.parentIndex;
+    if (parentIndex != nullValue)
+        ManageUnavailableBlocksRecursive(parentIndex);
+}
+
+size_t MemoryTree::FindBlockRecursiveAddress(
+    size_t address, size_t size, size_t nodeIndex
+) const noexcept {
+    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
+    //TODO
+    return nullValue;
+}
+
+void MemoryTree::ManageUnavailableBlocksRecursive(size_t nodeIndex) noexcept {
+
 }

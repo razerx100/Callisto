@@ -36,7 +36,9 @@ void* Allocator::Allocate(size_t size, size_t alignment) {
     return reinterpret_cast<void*>(m_memTree.Allocate(size, alignment));
 }
 
-void Allocator::Deallocate(void* ptr, size_t size) noexcept {}
+void Allocator::Deallocate(void* ptr, size_t size) noexcept {
+    m_memTree.Deallocate(reinterpret_cast<size_t>(ptr), size);
+}
 
 size_t Allocator::GetMemorySize() const noexcept {
     return m_memorySize;
