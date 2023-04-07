@@ -86,7 +86,7 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment) {
 
     size_t blockIndex = nullValue;
     for (size_t nodeIndex : m_availableBlocks) {
-        blockIndex = FindBlockRecursive(size, alignment, nodeIndex);
+        blockIndex = FindAvailableBlockRecursive(size, alignment, nodeIndex);
         if (blockIndex != nullValue) {
             BlockNode& node = m_memTree[blockIndex];
             MemoryBlock& memBlock = node.block;
@@ -152,29 +152,31 @@ void MemoryTree::RemoveIndexFromAvailable(size_t index) noexcept {
         m_availableBlocks.erase(findIt);
 }
 
-size_t MemoryTree::FindBlockRecursive(
+size_t MemoryTree::FindAvailableBlockRecursive(
     size_t size, size_t alignment, size_t nodeIndex
 ) const noexcept {
     const BlockNode& node = m_memTree[nodeIndex];
-    const MemoryBlock& memBlock = node.block;
 
     static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
 
-    // If the current block is larger than necessary, look through the children to see if they fit
-    // better
-    if (memBlock.size > size) {
-        for (size_t child : node.childrenIndices) {
-            const size_t blockIndex = FindBlockRecursive(size, alignment, child);
+    // If the children have enough space to allocate, prioritise them
+    for (size_t child : node.childrenIndices) {
+        const BlockNode& childNode = m_memTree[child];
+        const MemoryBlock& childBlock = childNode.block;
 
-            if (blockIndex != nullValue)
-                return blockIndex;
-        }
+        size_t blockIndex = nullValue;
+        if (childBlock.available && childBlock.size >= size)
+            blockIndex = FindAvailableBlockRecursive(size, alignment, child);
+
+        if (blockIndex != nullValue)
+            return blockIndex;
     }
 
+    const MemoryBlock& memBlock = node.block;
     const size_t alignedSize = GetAlignedSize(memBlock.startingAddress, alignment, size);
 
     const size_t blockSize = GetUpperBound2sExponent(alignedSize);
-    if (memBlock.available && blockSize == memBlock.size)
+    if (blockSize == memBlock.size)
         return nodeIndex;
 
     return nullValue;
@@ -196,7 +198,7 @@ size_t MemoryTree::GetAlignedSize(size_t startingAddress, size_t alignment, size
 void MemoryTree::Deallocate(size_t address, size_t size) noexcept {
     static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
 
-    const size_t blockIndex = FindBlockRecursiveAddress(address, size, m_rootIndex);
+    const size_t blockIndex = FindUnavailableBlockRecursive(address, size, m_rootIndex);
 
     assert(blockIndex != nullValue && "Can't find the block for deallocation.");
 
@@ -209,7 +211,7 @@ void MemoryTree::Deallocate(size_t address, size_t size) noexcept {
         ManageUnavailableBlocksRecursive(parentIndex);
 }
 
-size_t MemoryTree::FindBlockRecursiveAddress(
+size_t MemoryTree::FindUnavailableBlockRecursive(
     size_t address, size_t size, size_t nodeIndex
 ) const noexcept {
     static constexpr size_t nullValue = std::numeric_limits<size_t>::max();

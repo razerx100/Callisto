@@ -42,9 +42,11 @@ private:
     ) noexcept;
 
     [[nodiscard]]
-    size_t FindBlockRecursive(size_t size, size_t alignment, size_t nodeIndex) const noexcept;
+    size_t FindAvailableBlockRecursive(
+        size_t size, size_t alignment, size_t nodeIndex
+    ) const noexcept;
     [[nodiscard]]
-    size_t FindBlockRecursiveAddress(
+    size_t FindUnavailableBlockRecursive(
         size_t address, size_t size, size_t nodeIndex
     ) const noexcept;
 
