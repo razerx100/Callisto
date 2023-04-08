@@ -40,6 +40,8 @@ private:
     static size_t GetAlignedSize(
         size_t startingAddress, size_t alignment, size_t size
     ) noexcept;
+    [[nodiscard]]
+    static bool IsAddressInBlock(const MemoryBlock& block, size_t ptrAddress) noexcept;
 
     [[nodiscard]]
     size_t FindAvailableBlockRecursive(

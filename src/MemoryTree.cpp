@@ -165,7 +165,9 @@ size_t MemoryTree::FindAvailableBlockRecursive(
         const MemoryBlock& childBlock = childNode.block;
 
         size_t blockIndex = nullValue;
-        if (childBlock.available && childBlock.size >= size)
+        // No need to check for availability, since the branch's root is selected from
+        // available-blocks
+        if (childBlock.size >= size)
             blockIndex = FindAvailableBlockRecursive(size, alignment, child);
 
         if (blockIndex != nullValue)
@@ -205,6 +207,7 @@ void MemoryTree::Deallocate(size_t address, size_t size) noexcept {
     BlockNode& node = m_memTree[blockIndex];
     MemoryBlock& memBlock = node.block;
     memBlock.available = true;
+    m_availableBlocks.emplace_back(blockIndex);
 
     const size_t parentIndex = node.parentIndex;
     if (parentIndex != nullValue)
@@ -214,11 +217,51 @@ void MemoryTree::Deallocate(size_t address, size_t size) noexcept {
 size_t MemoryTree::FindUnavailableBlockRecursive(
     size_t address, size_t size, size_t nodeIndex
 ) const noexcept {
-    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
-    //TODO
-    return nullValue;
+    const BlockNode& node = m_memTree[nodeIndex];
+
+    for (size_t child : node.childrenIndices) {
+        const BlockNode& childNode = m_memTree[child];
+        const MemoryBlock& childBlock = childNode.block;
+
+        // The last unavailable node of a branch with the address in it will be the desired
+        // block
+        if (IsAddressInBlock(childBlock, address) && !childBlock.available)
+            return FindUnavailableBlockRecursive(address, size, child);
+    }
+
+    return nodeIndex;
+}
+
+bool MemoryTree::IsAddressInBlock(const MemoryBlock& block, size_t ptrAddress) noexcept {
+    const size_t nextBlockStart = block.startingAddress + block.size;
+
+    return block.startingAddress <= ptrAddress && ptrAddress < nextBlockStart;
 }
 
 void MemoryTree::ManageUnavailableBlocksRecursive(size_t nodeIndex) noexcept {
+    BlockNode& node = m_memTree[nodeIndex];
+    MemoryBlock& memBlock = node.block;
 
+    bool childrenAvailable = true;
+    for (size_t childIndex : node.childrenIndices) {
+        BlockNode& childNode = m_memTree[childIndex];
+
+        if (!childNode.block.available) {
+            childrenAvailable = false;
+            break;
+        }
+    }
+
+    // If all of the children are available, then remove them from the availblocks and add
+    // their parent instead
+    if (childrenAvailable) {
+        for (size_t childIndex : node.childrenIndices)
+            RemoveIndexFromAvailable(childIndex);
+
+        memBlock.available = true;
+        m_availableBlocks.emplace_back(nodeIndex);
+    }
+
+    if (node.parentIndex != std::numeric_limits<size_t>::max())
+        ManageAvailableBlocksRecursive(node.parentIndex);
 }
