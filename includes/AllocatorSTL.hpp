@@ -7,6 +7,9 @@
 
 template<typename T>
 class AllocatorSTL {
+    template<typename U>
+    friend class AllocatorSTL;
+
 public:
     typedef T value_type;
     typedef size_t size_type;
@@ -25,6 +28,12 @@ public:
     AllocatorSTL(const AllocatorSTL& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
     AllocatorSTL(AllocatorSTL&& alloc) noexcept : m_allocator{ std::move(alloc.m_allocator) } {}
 
+    template<typename U>
+    AllocatorSTL(const AllocatorSTL<U>& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
+    template<typename U>
+    AllocatorSTL(AllocatorSTL<U>&& alloc) noexcept
+        : m_allocator{ std::move(alloc.m_allocator) } {}
+
     AllocatorSTL& operator=(AllocatorSTL&& alloc) noexcept {
         m_allocator = std::move(alloc.m_allocator);
 
@@ -37,8 +46,18 @@ public:
         return *this;
     }
 
-    bool operator==(const AllocatorSTL& rhs) const noexcept {
-        return m_allocator == rhs.m_allocator;
+    template<typename U>
+    friend bool operator==(
+        const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
+        ) noexcept {
+        return lhs.m_allocator == rhs.m_allocator;
+    }
+
+    template<typename U>
+    friend bool operator!=(
+        const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
+        ) noexcept {
+        return lhs.m_allocator != rhs.m_allocator;
     }
 
     pointer allocate(size_type size) {
