@@ -37,6 +37,10 @@ public:
         return *this;
     }
 
+    bool operator==(const AllocatorSTL& rhs) const noexcept {
+        return m_allocator == rhs.m_allocator;
+    }
+
     pointer allocate(size_type size) {
         return static_cast<pointer>(m_allocator->Allocate(size * sizeof(T), alignof(T)));
     }
