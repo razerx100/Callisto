@@ -263,5 +263,5 @@ void MemoryTree::ManageUnavailableBlocksRecursive(size_t nodeIndex) noexcept {
     }
 
     if (node.parentIndex != std::numeric_limits<size_t>::max())
-        ManageAvailableBlocksRecursive(node.parentIndex);
+        ManageUnavailableBlocksRecursive(node.parentIndex);
 }
