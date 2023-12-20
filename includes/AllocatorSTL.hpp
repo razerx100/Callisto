@@ -6,7 +6,8 @@
 #include <new>
 
 template<typename T>
-class AllocatorSTL {
+class AllocatorSTL
+{
     template<typename U>
     friend class AllocatorSTL;
 
@@ -22,25 +23,25 @@ public:
     template<typename U>
     struct rebind { typedef AllocatorSTL<U> other; };
 
-    AllocatorSTL(std::shared_ptr<Allocator> allocator) noexcept
-        : m_allocator{ std::move(allocator) } {}
+    AllocatorSTL(Allocator& allocator) noexcept : m_allocator{ allocator } {}
 
     AllocatorSTL(const AllocatorSTL& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
-    AllocatorSTL(AllocatorSTL&& alloc) noexcept : m_allocator{ std::move(alloc.m_allocator) } {}
+    AllocatorSTL(AllocatorSTL&& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
 
     template<typename U>
     AllocatorSTL(const AllocatorSTL<U>& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
     template<typename U>
-    AllocatorSTL(AllocatorSTL<U>&& alloc) noexcept
-        : m_allocator{ std::move(alloc.m_allocator) } {}
+    AllocatorSTL(AllocatorSTL<U>&& alloc) noexcept : m_allocator{ alloc.m_allocator } {}
 
-    AllocatorSTL& operator=(AllocatorSTL&& alloc) noexcept {
-        m_allocator = std::move(alloc.m_allocator);
+    AllocatorSTL& operator=(AllocatorSTL&& alloc) noexcept
+    {
+        m_allocator = alloc.m_allocator;
 
         return *this;
     }
 
-    AllocatorSTL& operator=(const AllocatorSTL& alloc) noexcept {
+    AllocatorSTL& operator=(const AllocatorSTL& alloc) noexcept
+    {
         m_allocator = alloc.m_allocator;
 
         return *this;
@@ -49,39 +50,45 @@ public:
     template<typename U>
     friend bool operator==(
         const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
-        ) noexcept {
+        ) noexcept
+    {
         return lhs.m_allocator == rhs.m_allocator;
     }
 
     template<typename U>
     friend bool operator!=(
         const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
-        ) noexcept {
+        ) noexcept
+    {
         return lhs.m_allocator != rhs.m_allocator;
     }
 
-    pointer allocate(size_type size) {
-        return static_cast<pointer>(m_allocator->Allocate(size * sizeof(T), alignof(T)));
+    pointer allocate(size_type size)
+    {
+        return static_cast<pointer>(m_allocator.Allocate(size * sizeof(T), alignof(T)));
     }
 
-    void deallocate(pointer ptr, size_type size) {
-        m_allocator->Deallocate(ptr, size * sizeof(T));
+    void deallocate(pointer ptr, size_type size)
+    {
+        m_allocator.Deallocate(ptr, size * sizeof(T));
     }
 
     template<typename X, typename... Args>
     void construct(X* ptr, Args&&... args)
-        noexcept(std::is_nothrow_constructible<X, Args...>::value) {
+        noexcept(std::is_nothrow_constructible<X, Args...>::value)
+    {
         ::new(ptr) X(std::forward<Args>(args)...);
     }
 
     template<typename X>
     void destroy(X* ptr) noexcept(std::is_nothrow_destructible<X>::value) { ptr->~X(); }
 
-    size_type max_size() const noexcept {
-        return m_allocator->GetMemorySize();
+    size_type max_size() const noexcept
+    {
+        return m_allocator.GetMemorySize();
     }
 
 private:
-    std::shared_ptr<Allocator> m_allocator;
+    Allocator& m_allocator;
 };
 #endif
