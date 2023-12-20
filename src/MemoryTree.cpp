@@ -4,10 +4,31 @@
 #include <limits>
 #include <algorithm>
 
-size_t MemoryTree::Align(size_t address, size_t alignment) noexcept {
+
+// Static functions
+[[nodiscard]]
+static size_t Align(size_t address, size_t alignment) noexcept
+{
     return (address + (alignment - 1u)) & ~(alignment - 1u);
 }
 
+[[nodiscard]]
+static size_t GetUpperBound2sExponent(size_t size) noexcept
+{
+    size_t result = 4u;
+    for (; result < size; result <<= 1u);
+
+    return result;
+}
+
+[[nodiscard]]
+static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept
+{
+    return size + (Align(startingAddress, alignment) - startingAddress);
+}
+
+
+// Memory Tree
 MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
     : m_rootIndex{ 0u }, m_totalSize{ size } {
     assert(size % 4u == 0u && "Not divisible by 4u");
@@ -55,31 +76,6 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
 
     m_memTree.emplace_back(root);
     m_availableBlocks.emplace_back(m_rootIndex);
-}
-
-MemoryTree::MemoryTree(const MemoryTree& memTree) noexcept
-    : m_memTree{ memTree.m_memTree }, m_availableBlocks{ memTree.m_availableBlocks },
-    m_rootIndex{ memTree.m_rootIndex } {}
-
-MemoryTree::MemoryTree(MemoryTree&& memTree) noexcept
-    : m_memTree{ std::move(memTree.m_memTree) },
-    m_availableBlocks{ std::move(memTree.m_availableBlocks) },
-    m_rootIndex{ memTree.m_rootIndex } {}
-
-MemoryTree& MemoryTree::operator=(const MemoryTree& memTree) noexcept {
-    m_memTree = memTree.m_memTree;
-    m_availableBlocks = memTree.m_availableBlocks;
-    m_rootIndex = memTree.m_rootIndex;
-
-    return *this;
-}
-
-MemoryTree& MemoryTree::operator=(MemoryTree&& memTree) noexcept {
-    m_memTree = std::move(memTree.m_memTree);
-    m_availableBlocks = std::move(memTree.m_availableBlocks);
-    m_rootIndex = memTree.m_rootIndex;
-
-    return *this;
 }
 
 size_t MemoryTree::Allocate(size_t size, size_t alignment) {
@@ -183,19 +179,6 @@ size_t MemoryTree::FindAvailableBlockRecursive(
         return nodeIndex;
 
     return nullValue;
-}
-
-size_t MemoryTree::GetUpperBound2sExponent(size_t size) noexcept {
-    size_t result = 4u;
-    for (; result < size; result <<= 1u);
-
-    return result;
-}
-
-size_t MemoryTree::GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept {
-    const size_t alignedAddress = Align(startingAddress, alignment);
-
-    return size + (alignedAddress - startingAddress);
 }
 
 void MemoryTree::Deallocate(size_t address, size_t size) noexcept {

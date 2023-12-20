@@ -4,14 +4,17 @@
 #include <vector>
 #include <memory>
 
-class MemoryTree {
-    struct MemoryBlock {
+class MemoryTree
+{
+    struct MemoryBlock
+    {
         size_t startingAddress;
         size_t size;
         bool available;
     };
 
-    struct BlockNode {
+    struct BlockNode
+    {
         MemoryBlock block;
         size_t parentIndex;
         std::vector<size_t> childrenIndices;
@@ -20,11 +23,32 @@ class MemoryTree {
 public:
     MemoryTree(size_t startingAddress, size_t size) noexcept;
 
-    MemoryTree(const MemoryTree& memTree) noexcept;
-    MemoryTree(MemoryTree&& memTree) noexcept;
+    inline MemoryTree(const MemoryTree& memTree) noexcept
+        : m_memTree{ memTree.m_memTree }, m_availableBlocks{ memTree.m_availableBlocks },
+        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize } {}
+    inline MemoryTree(MemoryTree&& memTree) noexcept
+        : m_memTree{ std::move(memTree.m_memTree) },
+        m_availableBlocks{ std::move(memTree.m_availableBlocks) },
+        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize } {}
 
-    MemoryTree& operator=(const MemoryTree& memTree) noexcept;
-    MemoryTree& operator=(MemoryTree&& memTree) noexcept;
+    inline MemoryTree& operator=(const MemoryTree& memTree) noexcept
+    {
+        m_memTree = memTree.m_memTree;
+        m_availableBlocks = memTree.m_availableBlocks;
+        m_rootIndex = memTree.m_rootIndex;
+        m_totalSize = memTree.m_totalSize;
+
+        return *this;
+    }
+    inline MemoryTree& operator=(MemoryTree&& memTree) noexcept
+    {
+        m_memTree = std::move(memTree.m_memTree);
+        m_availableBlocks = std::move(memTree.m_availableBlocks);
+        m_rootIndex = memTree.m_rootIndex;
+        m_totalSize = memTree.m_totalSize;
+
+        return *this;
+    }
 
     [[nodiscard]]
     size_t Allocate(size_t size, size_t alignment);
@@ -35,14 +59,6 @@ public:
     void Deallocate(size_t address, size_t size) noexcept;
 
 private:
-    [[nodiscard]]
-    static size_t Align(size_t address, size_t alignment) noexcept;
-    [[nodiscard]]
-    static size_t GetUpperBound2sExponent(size_t size) noexcept;
-    [[nodiscard]]
-    static size_t GetAlignedSize(
-        size_t startingAddress, size_t alignment, size_t size
-    ) noexcept;
     [[nodiscard]]
     static bool IsAddressInBlock(const MemoryBlock& block, size_t ptrAddress) noexcept;
 
