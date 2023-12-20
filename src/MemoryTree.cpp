@@ -8,7 +8,8 @@ size_t MemoryTree::Align(size_t address, size_t alignment) noexcept {
     return (address + (alignment - 1u)) & ~(alignment - 1u);
 }
 
-MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept : m_rootIndex{ 0u } {
+MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
+    : m_rootIndex{ 0u }, m_totalSize{ size } {
     assert(size % 4u == 0u && "Not divisible by 4u");
 
     size_t blockSize = 4u;

@@ -2,28 +2,57 @@
 #define CALLISTO_ALLOCATOR_HPP_
 #include <MemoryTree.hpp>
 
-class Allocator {
+class Allocator
+{
 public:
-    Allocator(size_t memoryStart, size_t memorySize) noexcept;
-    Allocator(void* memoryStart, size_t memorySize) noexcept;
+    inline Allocator(size_t memoryStart, size_t memorySize) noexcept
+        : m_memTree{ memoryStart, memorySize } {}
+    inline Allocator(void* memoryStart, size_t memorySize) noexcept
+        : Allocator{ ToSizeT(memoryStart), memorySize } {}
 
-    Allocator(const Allocator& alloc) noexcept;
-    Allocator(Allocator&& alloc) noexcept;
+    inline Allocator(const Allocator& alloc) noexcept : m_memTree{ alloc.m_memTree } {}
+    inline Allocator(Allocator&& alloc) noexcept : m_memTree{ std::move(alloc.m_memTree) } {}
 
-    Allocator& operator=(const Allocator& alloc) noexcept;
-    Allocator& operator=(Allocator&& alloc) noexcept;
+    inline Allocator& operator=(const Allocator& alloc) noexcept
+    {
+        m_memTree = alloc.m_memTree;
+
+        return *this;
+    }
+
+    inline Allocator& operator=(Allocator&& alloc) noexcept
+    {
+        m_memTree = std::move(alloc.m_memTree);
+
+        return *this;
+    }
+
+    template<typename T = void>
+    [[nodiscard]]
+    inline T* Allocate(size_t size, size_t alignment)
+    {
+        return reinterpret_cast<T*>(m_memTree.Allocate(size, alignment));
+    }
+
+    inline void Deallocate(void* ptr, size_t size) noexcept
+    {
+        m_memTree.Deallocate(ToSizeT(ptr), size);
+    }
 
     [[nodiscard]]
-    void* Allocate(size_t size, size_t alignment);
-
-    void Deallocate(void* ptr, size_t size) noexcept;
-
-    [[nodiscard]]
-    size_t GetMemorySize() const noexcept;
+    inline size_t GetMemorySize() const noexcept
+    {
+        return m_memTree.TotalSize();
+    }
 
 private:
-    size_t m_memoryStart;
-    size_t m_memorySize;
+    [[nodiscard]]
+    inline static size_t ToSizeT(void* ptr) noexcept
+    {
+        return reinterpret_cast<size_t>(ptr);
+    }
+
+private:
     MemoryTree m_memTree;
 };
 #endif

@@ -29,6 +29,9 @@ public:
     [[nodiscard]]
     size_t Allocate(size_t size, size_t alignment);
 
+    [[nodiscard]]
+    inline size_t TotalSize() const noexcept { return m_totalSize; }
+
     void Deallocate(size_t address, size_t size) noexcept;
 
 private:
@@ -110,5 +113,6 @@ private:
     std::vector<BlockNode> m_memTree;
     std::vector<size_t> m_availableBlocks;
     size_t m_rootIndex;
+    size_t m_totalSize;
 };
 #endif
