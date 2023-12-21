@@ -3,6 +3,7 @@
 #include <ranges>
 #include <limits>
 #include <algorithm>
+#include <Exception.hpp>
 
 
 // Static functions
@@ -127,8 +128,8 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment)
         }
     }
 
-    // TODO: This needs to be an exception.
-    assert(blockIndex && "Not enough memory available for allocation");
+    if (!blockIndex)
+        throw Exception("AllocationError", "Not enough memory available for allocation.");
 
     const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
 
