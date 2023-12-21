@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <optional>
 
 class MemoryTree
 {
@@ -55,7 +56,7 @@ private:
     struct BlockNode
     {
         MemoryBlock block;
-        size_t parentIndex;
+        std::optional<size_t> parentIndex;
         std::vector<size_t> childrenIndices;
     };
 
@@ -64,7 +65,7 @@ private:
     static bool IsAddressInBlock(const MemoryBlock& block, size_t ptrAddress) noexcept;
 
     [[nodiscard]]
-    size_t FindAvailableBlockRecursive(
+    std::optional<size_t> FindAvailableBlockRecursive(
         size_t size, size_t alignment, size_t nodeIndex
     ) const noexcept;
     [[nodiscard]]
@@ -101,7 +102,7 @@ private:
         {
             memBlock.startingAddress = offset;
             BlockNode node{
-                .block = memBlock, .parentIndex = std::numeric_limits<size_t>::max()
+                .block = memBlock, .parentIndex = {}
             };
 
             // If the index is less than the immediateParentCount, add an immediate parent.

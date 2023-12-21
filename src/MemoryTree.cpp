@@ -52,7 +52,7 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
     };
     BlockNode root
     {
-        .block = memoryBlock, .parentIndex = std::numeric_limits<size_t>::max()
+        .block = memoryBlock, .parentIndex = {}
     };
 
     // Haven't added the root node yet, so the size of memTree is its index
@@ -71,7 +71,8 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
             children.emplace_back(immediateChild1 + 1u);
         }
         else
-            for (auto child : rootSChildren) {
+            for (auto child : rootSChildren)
+            {
                 children.emplace_back(child);
 
                 m_memTree[child].parentIndex = m_rootIndex;
@@ -84,26 +85,25 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
 
 size_t MemoryTree::Allocate(size_t size, size_t alignment)
 {
-    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
-
-    size_t blockIndex = nullValue;
+    std::optional<size_t> blockIndex{};
 
     // Look through the available blocks for a block
     for (size_t nodeIndex : m_availableBlocks)
     {
         blockIndex = FindAvailableBlockRecursive(size, alignment, nodeIndex);
-        if (blockIndex != nullValue)
+        if (blockIndex)
         {
-            BlockNode& node = m_memTree[blockIndex];
+            BlockNode& node = m_memTree[blockIndex.value()];
 
             MemoryBlock& memBlock = node.block;
             memBlock.available = false;
 
             RemoveIndexFromAvailable(nodeIndex);
 
-            const size_t parentIndex = node.parentIndex;
-            if (parentIndex != nullValue) // Value should never be null but still checking
-                ManageAvailableBlocksRecursive(parentIndex);
+            const std::optional<size_t> parentIndex = node.parentIndex;
+
+            if (parentIndex)
+                ManageAvailableBlocksRecursive(parentIndex.value());
 
             break;
         }
@@ -113,12 +113,13 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment)
     // So, if the root is not an exponent of 2, FindAvailableBlockRecursive will return null
     // even if there is enough space to allocate on the root. So, we have to check if it's
     // still possible to allocate on the root node.
-    if (blockIndex == nullValue)
+    if (!blockIndex)
     {
         MemoryBlock& memBlock = m_memTree[m_rootIndex].block;
         const size_t alignedSize = GetAlignedSize(memBlock.startingAddress, alignment, size);
 
-        if (memBlock.available && alignedSize <= memBlock.size) {
+        if (memBlock.available && alignedSize <= memBlock.size)
+        {
             memBlock.available = false;
             blockIndex = m_rootIndex;
 
@@ -127,9 +128,9 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment)
     }
 
     // TODO: This needs to be an exception.
-    assert(blockIndex != nullValue && "Not enough memory available for allocation");
+    assert(blockIndex && "Not enough memory available for allocation");
 
-    const MemoryBlock& memBlock = m_memTree[blockIndex].block;
+    const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
 
     return Align(memBlock.startingAddress, alignment);
 }
@@ -158,8 +159,8 @@ void MemoryTree::ManageAvailableBlocksRecursive(size_t parentNodeIndex) noexcept
     }
 
     // Recursively check the parent nodes.
-    if (parentNode.parentIndex != std::numeric_limits<size_t>::max())
-        ManageAvailableBlocksRecursive(parentNode.parentIndex);
+    if (parentNode.parentIndex)
+        ManageAvailableBlocksRecursive(parentNode.parentIndex.value());
 }
 
 void MemoryTree::RemoveIndexFromAvailable(size_t index) noexcept
@@ -169,13 +170,11 @@ void MemoryTree::RemoveIndexFromAvailable(size_t index) noexcept
         m_availableBlocks.erase(findIt);
 }
 
-size_t MemoryTree::FindAvailableBlockRecursive(
+std::optional<size_t> MemoryTree::FindAvailableBlockRecursive(
     size_t size, size_t alignment, size_t nodeIndex
 ) const noexcept
 {
     const BlockNode& node = m_memTree[nodeIndex];
-
-    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
 
     // If the children have enough space to allocate, prioritise them.
     for (size_t child : node.childrenIndices)
@@ -183,13 +182,13 @@ size_t MemoryTree::FindAvailableBlockRecursive(
         const BlockNode& childNode = m_memTree[child];
         const MemoryBlock& childBlock = childNode.block;
 
-        size_t blockIndex = nullValue;
+        std::optional<size_t> blockIndex{};
         // No need to check for availability here, since the branch's root is selected from
         // available-blocks.
         if (childBlock.size >= size)
             blockIndex = FindAvailableBlockRecursive(size, alignment, child);
 
-        if (blockIndex != nullValue)
+        if (blockIndex)
             return blockIndex;
     }
 
@@ -204,7 +203,7 @@ size_t MemoryTree::FindAvailableBlockRecursive(
     if (blockSize == memBlock.size)
         return nodeIndex;
 
-    return nullValue;
+    return {};
 }
 
 void MemoryTree::Deallocate(size_t address, size_t size) noexcept
@@ -213,16 +212,14 @@ void MemoryTree::Deallocate(size_t address, size_t size) noexcept
 
     const size_t blockIndex = FindUnavailableBlockRecursive(address, size, m_rootIndex);
 
-    assert(blockIndex != nullValue && "Can't find the block for deallocation.");
-
     BlockNode& node = m_memTree[blockIndex];
     MemoryBlock& memBlock = node.block;
     memBlock.available = true;
     m_availableBlocks.emplace_back(blockIndex);
 
-    const size_t parentIndex = node.parentIndex;
-    if (parentIndex != nullValue)
-        ManageUnavailableBlocksRecursive(parentIndex);
+    const std::optional<size_t> parentIndex = node.parentIndex;
+    if (parentIndex)
+        ManageUnavailableBlocksRecursive(parentIndex.value());
 }
 
 size_t MemoryTree::FindUnavailableBlockRecursive(
@@ -283,6 +280,6 @@ void MemoryTree::ManageUnavailableBlocksRecursive(size_t parentNodeIndex) noexce
     }
 
     // Recursively check the parent nodes.
-    if (parentNode.parentIndex != std::numeric_limits<size_t>::max())
-        ManageUnavailableBlocksRecursive(parentNode.parentIndex);
+    if (parentNode.parentIndex)
+        ManageUnavailableBlocksRecursive(parentNode.parentIndex.value());
 }
