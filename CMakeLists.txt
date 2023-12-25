@@ -24,7 +24,7 @@ add_library(${PROJECT_NAME}
     ${SRC}
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE includes/)
+target_include_directories(${PROJECT_NAME} PUBLIC includes/)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
 
@@ -32,4 +32,6 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
 endif()
 
-set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+if(PROJECT_IS_TOP_LEVEL)
+    set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+endif()
