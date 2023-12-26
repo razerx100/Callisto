@@ -1,6 +1,7 @@
 #ifndef CALLISTO_ALLOCATOR_HPP_
 #define CALLISTO_ALLOCATOR_HPP_
 #include <MemoryTree.hpp>
+#include <concepts>
 
 class Allocator
 {
@@ -32,6 +33,13 @@ public:
     inline T* Allocate(size_t size, size_t alignment)
     {
         return reinterpret_cast<T*>(m_memTree.Allocate(size, alignment));
+    }
+
+    template<std::integral T = size_t>
+    [[nodiscard]]
+    inline T AllocateI(size_t size, size_t alignment)
+    {
+        return static_cast<T>(m_memTree.Allocate(size, alignment));
     }
 
     inline void Deallocate(void* ptr, size_t size) noexcept
