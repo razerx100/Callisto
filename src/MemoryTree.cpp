@@ -84,7 +84,7 @@ MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
     m_availableBlocks.emplace_back(m_rootIndex);
 }
 
-size_t MemoryTree::Allocate(size_t size, size_t alignment)
+std::optional<size_t> MemoryTree::GetAllocationBlockIndex(size_t size, size_t alignment) noexcept
 {
     std::optional<size_t> blockIndex{};
 
@@ -128,8 +128,27 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment)
         }
     }
 
+    return blockIndex;
+}
+
+size_t MemoryTree::Allocate(size_t size, size_t alignment)
+{
+    std::optional<size_t> blockIndex = GetAllocationBlockIndex(size, alignment);
+
     if (!blockIndex)
         throw Exception("AllocationError", "Not enough memory available for allocation.");
+
+    const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
+
+    return Align(memBlock.startingAddress, alignment);
+}
+
+std::optional<size_t> MemoryTree::AllocateN(size_t size, size_t alignment) noexcept
+{
+    std::optional<size_t> blockIndex = GetAllocationBlockIndex(size, alignment);
+
+    if (!blockIndex)
+        return {};
 
     const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
 

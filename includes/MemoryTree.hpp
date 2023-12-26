@@ -39,6 +39,8 @@ public:
 
     [[nodiscard]]
     size_t Allocate(size_t size, size_t alignment);
+    [[nodiscard]]
+    std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept;
 
     [[nodiscard]]
     inline size_t TotalSize() const noexcept { return m_totalSize; }
@@ -72,6 +74,8 @@ private:
     size_t FindUnavailableBlockRecursive(
         size_t address, size_t size, size_t nodeIndex
     ) const noexcept;
+    [[nodiscard]]
+    std::optional<size_t> GetAllocationBlockIndex(size_t size, size_t alignment) noexcept;
 
     void ManageAvailableBlocksRecursive(size_t parentNodeIndex) noexcept;
     void ManageUnavailableBlocksRecursive(size_t parentNodeIndex) noexcept;
