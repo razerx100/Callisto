@@ -10,26 +10,6 @@ class MemoryTree
 public:
     MemoryTree(size_t startingAddress, size_t size) noexcept;
 
-    MemoryTree(const MemoryTree& memTree) = delete;
-    MemoryTree& operator=(const MemoryTree& memTree) = delete;
-
-    inline MemoryTree(MemoryTree&& memTree) noexcept
-        : m_memTree{ std::move(memTree.m_memTree) },
-        m_availableBlocks{ std::move(memTree.m_availableBlocks) },
-        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize },
-        m_availableSize{ memTree.m_availableSize } {}
-
-    inline MemoryTree& operator=(MemoryTree&& memTree) noexcept
-    {
-        m_memTree         = std::move(memTree.m_memTree);
-        m_availableBlocks = std::move(memTree.m_availableBlocks);
-        m_rootIndex       = memTree.m_rootIndex;
-        m_totalSize       = memTree.m_totalSize;
-        m_availableSize   = memTree.m_availableSize;
-
-        return *this;
-    }
-
     [[nodiscard]]
     size_t Allocate(size_t size, size_t alignment);
     [[nodiscard]]
@@ -47,14 +27,14 @@ private:
     {
         size_t startingAddress;
         size_t size;
-        bool available;
+        bool   available;
     };
 
     struct BlockNode
     {
-        MemoryBlock block;
+        MemoryBlock           block;
         std::optional<size_t> parentIndex;
-        std::vector<size_t> childrenIndices;
+        std::vector<size_t>   childrenIndices;
     };
 
 private:
@@ -143,5 +123,26 @@ private:
     size_t                 m_rootIndex;
     size_t                 m_totalSize;
     size_t                 m_availableSize;
+
+public:
+    MemoryTree(const MemoryTree& memTree) = delete;
+    MemoryTree& operator=(const MemoryTree& memTree) = delete;
+
+    inline MemoryTree(MemoryTree&& memTree) noexcept
+        : m_memTree{ std::move(memTree.m_memTree) },
+        m_availableBlocks{ std::move(memTree.m_availableBlocks) },
+        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize },
+        m_availableSize{ memTree.m_availableSize } {}
+
+    inline MemoryTree& operator=(MemoryTree&& memTree) noexcept
+    {
+        m_memTree         = std::move(memTree.m_memTree);
+        m_availableBlocks = std::move(memTree.m_availableBlocks);
+        m_rootIndex       = memTree.m_rootIndex;
+        m_totalSize       = memTree.m_totalSize;
+        m_availableSize   = memTree.m_availableSize;
+
+        return *this;
+    }
 };
 #endif
