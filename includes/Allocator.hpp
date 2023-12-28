@@ -43,10 +43,9 @@ public:
     }
 
     [[nodiscard]]
-    inline size_t GetMemorySize() const noexcept
-    {
-        return m_memTree.TotalSize();
-    }
+    inline size_t GetMemorySize() const noexcept { return m_memTree.TotalSize(); }
+    [[nodiscard]]
+    inline size_t GetAvailableSize() const noexcept { return m_memTree.AvailableSize(); }
 
 private:
     [[nodiscard]]
