@@ -10,29 +10,22 @@ class MemoryTree
 public:
     MemoryTree(size_t startingAddress, size_t size) noexcept;
 
-    inline MemoryTree(const MemoryTree& memTree) noexcept
-        : m_memTree{ memTree.m_memTree }, m_availableBlocks{ memTree.m_availableBlocks },
-        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize } {}
+    MemoryTree(const MemoryTree& memTree) = delete;
+    MemoryTree& operator=(const MemoryTree& memTree) = delete;
+
     inline MemoryTree(MemoryTree&& memTree) noexcept
         : m_memTree{ std::move(memTree.m_memTree) },
         m_availableBlocks{ std::move(memTree.m_availableBlocks) },
-        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize } {}
+        m_rootIndex{ memTree.m_rootIndex }, m_totalSize{ memTree.m_totalSize },
+        m_availableSize{ memTree.m_availableSize } {}
 
-    inline MemoryTree& operator=(const MemoryTree& memTree) noexcept
-    {
-        m_memTree = memTree.m_memTree;
-        m_availableBlocks = memTree.m_availableBlocks;
-        m_rootIndex = memTree.m_rootIndex;
-        m_totalSize = memTree.m_totalSize;
-
-        return *this;
-    }
     inline MemoryTree& operator=(MemoryTree&& memTree) noexcept
     {
-        m_memTree = std::move(memTree.m_memTree);
+        m_memTree         = std::move(memTree.m_memTree);
         m_availableBlocks = std::move(memTree.m_availableBlocks);
-        m_rootIndex = memTree.m_rootIndex;
-        m_totalSize = memTree.m_totalSize;
+        m_rootIndex       = memTree.m_rootIndex;
+        m_totalSize       = memTree.m_totalSize;
+        m_availableSize   = memTree.m_availableSize;
 
         return *this;
     }
@@ -44,6 +37,8 @@ public:
 
     [[nodiscard]]
     inline size_t TotalSize() const noexcept { return m_totalSize; }
+    [[nodiscard]]
+    inline size_t AvailableSize() const noexcept { return m_availableSize; }
 
     void Deallocate(size_t address, size_t size) noexcept;
 
@@ -144,8 +139,9 @@ private:
 
 private:
     std::vector<BlockNode> m_memTree;
-    std::vector<size_t> m_availableBlocks;
-    size_t m_rootIndex;
-    size_t m_totalSize;
+    std::vector<size_t>    m_availableBlocks;
+    size_t                 m_rootIndex;
+    size_t                 m_totalSize;
+    size_t                 m_availableSize;
 };
 #endif

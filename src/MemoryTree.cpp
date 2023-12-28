@@ -31,7 +31,7 @@ static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t si
 
 // Memory Tree
 MemoryTree::MemoryTree(size_t startingAddress, size_t size) noexcept
-    : m_rootIndex{ 0u }, m_totalSize{ size }
+    : m_rootIndex{ 0u }, m_totalSize{ size }, m_availableSize{ size }
 {
     assert(size % 4u == 0u && "Not divisible by 4u");
 
@@ -140,6 +140,8 @@ size_t MemoryTree::Allocate(size_t size, size_t alignment)
 
     const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
 
+    m_availableSize -= memBlock.size;
+
     return Align(memBlock.startingAddress, alignment);
 }
 
@@ -151,6 +153,8 @@ std::optional<size_t> MemoryTree::AllocateN(size_t size, size_t alignment) noexc
         return {};
 
     const MemoryBlock& memBlock = m_memTree[blockIndex.value()].block;
+
+    m_availableSize -= memBlock.size;
 
     return Align(memBlock.startingAddress, alignment);
 }
@@ -228,14 +232,14 @@ std::optional<size_t> MemoryTree::FindAvailableBlockRecursive(
 
 void MemoryTree::Deallocate(size_t address, size_t size) noexcept
 {
-    static constexpr size_t nullValue = std::numeric_limits<size_t>::max();
-
     const size_t blockIndex = FindUnavailableBlockRecursive(address, size, m_rootIndex);
 
     BlockNode& node = m_memTree[blockIndex];
     MemoryBlock& memBlock = node.block;
     memBlock.available = true;
     m_availableBlocks.emplace_back(blockIndex);
+
+    m_availableSize += memBlock.size;
 
     const std::optional<size_t> parentIndex = node.parentIndex;
     if (parentIndex)

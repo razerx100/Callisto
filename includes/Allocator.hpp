@@ -11,15 +11,10 @@ public:
     inline Allocator(void* memoryStart, size_t memorySize) noexcept
         : Allocator{ ToSizeT(memoryStart), memorySize } {}
 
-    inline Allocator(const Allocator& alloc) noexcept : m_memTree{ alloc.m_memTree } {}
+    Allocator(const Allocator&) = delete;
+    Allocator& operator=(const Allocator&) = delete;
+
     inline Allocator(Allocator&& alloc) noexcept : m_memTree{ std::move(alloc.m_memTree) } {}
-
-    inline Allocator& operator=(const Allocator& alloc) noexcept
-    {
-        m_memTree = alloc.m_memTree;
-
-        return *this;
-    }
 
     inline Allocator& operator=(Allocator&& alloc) noexcept
     {
