@@ -7,12 +7,16 @@
 
 
 // Static functions
+// Aligns the address to the alignment.
+// Ex: fn(address 18, alignment 16) = 32.
 [[nodiscard]]
 static size_t Align(size_t address, size_t alignment) noexcept
 {
     return (address + (alignment - 1u)) & ~(alignment - 1u);
 }
 
+// Gets the upperBound 2s Exponent.
+// Ex: fn(48) = 64.
 [[nodiscard]]
 static size_t GetUpperBound2sExponent(size_t size) noexcept
 {
@@ -22,6 +26,8 @@ static size_t GetUpperBound2sExponent(size_t size) noexcept
     return result;
 }
 
+// Gets the total size after the starting address has been aligned.
+// Ex: fn(18, 16, 64) = 78.
 [[nodiscard]]
 static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept
 {
@@ -246,19 +252,21 @@ void MemoryTree::Deallocate(size_t address, size_t size) noexcept
         ManageUnavailableBlocksRecursive(parentIndex.value());
 }
 
+// The nodeIndex starts with root. Since it was allocated and now is trying to deallocate,
+// it must be in the tree.
 size_t MemoryTree::FindUnavailableBlockRecursive(
     size_t address, size_t size, size_t nodeIndex
 ) const noexcept
 {
     const BlockNode& node = m_memTree[nodeIndex];
 
+    // The last unavailable block which contains the starting address should be the one where
+    // the allocation was made. Its children should be left available during allocation.
     for (size_t child : node.childrenIndices)
     {
         const BlockNode& childNode = m_memTree[child];
         const MemoryBlock& childBlock = childNode.block;
 
-        // The last unavailable node of a branch with the address in it will be the desired
-        // block
         if (IsAddressInBlock(childBlock, address) && !childBlock.available)
             return FindUnavailableBlockRecursive(address, size, child);
     }
