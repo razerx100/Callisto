@@ -1,3 +1,5 @@
 .vs
 Solution
+out
+build
 *.lib
