@@ -26,10 +26,10 @@ union CUint64
 		std::uint8_t second;
 		std::uint8_t third;
 		std::uint8_t fourth;
+		std::uint8_t fifth;
 		std::uint8_t sixth;
 		std::uint8_t seventh;
 		std::uint8_t eighth;
-		std::uint8_t nineth;
 	} value8;
 
 	inline operator std::uint64_t() const noexcept { return value64; }

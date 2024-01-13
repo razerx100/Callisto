@@ -15,10 +15,19 @@ public:
 
 private:
 	[[nodiscard]]
-	std::vector<AllocInfo>& GetSuitableBlocks(size_t startingAddress, size_t totalSize) noexcept;
+	std::vector<AllocInfo>& GetSuitableBlocks(size_t startingAddress, size_t size) noexcept;
+	[[nodiscard]]
+	std::vector<AllocInfo>& GetSuitableBlockBySize(size_t size) noexcept;
+	[[nodiscard]]
+	std::vector<AllocInfo>& GetSuitableBlockByAddress(size_t startingAddress) noexcept;
 
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;
-	void MakeNewAvailableBlock(size_t startingAddress, size_t totalSize) noexcept;
+
+	void MakeInitialBlocks(size_t blockSize) noexcept;
+	void AssignInitialBlockAddresses(size_t startingAddress) noexcept;
+
+	void MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept;
+	void MakeNewAvailableBlock(size_t size) noexcept;
 
 private:
 	size_t                 m_minimumBlockSize;
