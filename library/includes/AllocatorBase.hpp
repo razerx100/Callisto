@@ -12,6 +12,22 @@ union CUint64
 	{
 		std::uint32_t first;
 		std::uint32_t second;
+
+		[[nodiscard]]
+		std::uint32_t Get(size_t index) const noexcept
+		{
+			if (index == 0)
+				return first;
+			else
+				return second;
+		}
+		void Set(size_t index, std::uint32_t value) noexcept
+		{
+			if (index == 0)
+				first  = value;
+			else
+				second = value;
+		}
 	} value32;
 	struct
 	{
@@ -19,6 +35,30 @@ union CUint64
 		std::uint16_t second;
 		std::uint16_t third;
 		std::uint16_t fourth;
+
+		[[nodiscard]]
+		std::uint16_t Get(size_t index) const noexcept
+		{
+			if (index == 0)
+				return first;
+			else if (index == 1)
+				return second;
+			else if (index == 2)
+				return third;
+			else
+				return fourth;
+		}
+		void Set(size_t index, std::uint16_t value) noexcept
+		{
+			if (index == 0)
+				first  = value;
+			else if (index == 1)
+				second = value;
+			else if (index == 2)
+				third  = value;
+			else
+				fourth = value;
+		}
 	} value16;
 	struct
 	{
@@ -30,6 +70,47 @@ union CUint64
 		std::uint8_t sixth;
 		std::uint8_t seventh;
 		std::uint8_t eighth;
+
+		[[nodiscard]]
+		std::uint8_t Get(size_t index) const noexcept
+		{
+			if (index == 0)
+				return first;
+			else if (index == 1)
+				return second;
+			else if (index == 2)
+				return third;
+			else if (index == 3)
+				return fourth;
+			else if (index == 4)
+				return fifth;
+			else if (index == 5)
+				return sixth;
+			else if (index == 6)
+				return seventh;
+			else
+				return eighth;
+		}
+		void Set(size_t index, std::uint8_t value) noexcept
+		{
+			if (index == 0)
+				first  = value;
+			else if (index == 1)
+				second = value;
+			else if (index == 2)
+				third  = value;
+			else if (index == 3)
+				fourth = value;
+			else if (index == 4)
+				fifth = value;
+			else if (index == 5)
+				sixth = value;
+			else if (index == 6)
+				seventh = value;
+			else
+				eighth = value;
+		}
+
 	} value8;
 
 	inline operator std::uint64_t() const noexcept { return value64; }

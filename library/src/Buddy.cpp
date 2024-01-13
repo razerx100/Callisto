@@ -136,7 +136,7 @@ void Buddy::AssignInitialBlockAddresses(size_t startingAddress) noexcept
 		for (; it != std::end(m_eightBitBlocks); ++it)
 		{
 			AllocInfo& info = *it;
-			info.startingAddress.value8.first = startingAddress;
+			info.startingAddress.value8.first = static_cast<std::uint8_t>(startingAddress);
 
 			startingAddress += info.size.value8.first;
 
@@ -153,7 +153,7 @@ void Buddy::AssignInitialBlockAddresses(size_t startingAddress) noexcept
 		for (; it != std::end(m_sixteenBitBlocks); ++it)
 		{
 			AllocInfo& info = *it;
-			info.startingAddress.value16.first = startingAddress;
+			info.startingAddress.value16.first = static_cast<std::uint16_t>(startingAddress);
 
 			startingAddress += info.size.value16.first;
 
@@ -170,7 +170,7 @@ void Buddy::AssignInitialBlockAddresses(size_t startingAddress) noexcept
 		for (; it != std::end(m_thirtyTwoBitBlocks); ++it)
 		{
 			AllocInfo& info = *it;
-			info.startingAddress.value32.first = startingAddress;
+			info.startingAddress.value32.first = static_cast<std::uint32_t>(startingAddress);
 
 			startingAddress += info.size.value32.first;
 
