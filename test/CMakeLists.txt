@@ -4,8 +4,10 @@ project(CallistoTest
     LANGUAGES CXX
 )
 
+file(GLOB_RECURSE SRC src/*.cc)
+
 add_executable(
-    ${PROJECT_NAME} src/CallistoTest.cxx
+    ${PROJECT_NAME} ${SRC}
 )
 
 include(FetchContent)

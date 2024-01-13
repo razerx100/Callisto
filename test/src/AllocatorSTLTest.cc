@@ -2,7 +2,7 @@
 
 #include <AllocatorSTL.hpp>
 
-TEST(CallistoTest, AllocatorSTLTest)
+TEST(AllocatorSTLTest, AllocationTest)
 {
     constexpr size_t memorySize = 256u;
     std::uint8_t memory[memorySize];
@@ -13,7 +13,6 @@ TEST(CallistoTest, AllocatorSTLTest)
 
     {
         AllocatorSTL<int> alloc{ allocator };
-        std::uint8_t memory[256u];
 
         std::vector<int, AllocatorSTL<int>> vec{ alloc };
         vec.reserve(32u);
