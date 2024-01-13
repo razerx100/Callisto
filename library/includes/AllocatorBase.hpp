@@ -31,6 +31,8 @@ union CUint64
 		std::uint8_t eighth;
 		std::uint8_t nineth;
 	} value8;
+
+	inline operator std::uint64_t() const noexcept { return value64; }
 };
 
 constexpr size_t operator"" _B(unsigned long long number) noexcept {

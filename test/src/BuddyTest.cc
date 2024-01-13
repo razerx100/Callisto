@@ -36,9 +36,9 @@ private:
 
 TEST(BuddyTest, BuddyInitTest)
 {
-	constexpr size_t startingAddress  = 0u;
-	constexpr size_t totalSize        = 1_GB;
-	constexpr size_t minimumBlockSize = 16_KB;
+	size_t startingAddress  = 0u;
+	size_t totalSize        = 1_GB;
+	size_t minimumBlockSize = 16_KB;
 
 	{
 		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
@@ -55,8 +55,51 @@ TEST(BuddyTest, BuddyInitTest)
 		if (const auto& thirtyTwoBitBlocks = buddy.GetThirtyTwoBitBlocks(); !std::empty(thirtyTwoBitBlocks))
 		{
 			const TestBuddy::AllocInfo& allocInfo = thirtyTwoBitBlocks.front();
-			EXPECT_EQ(allocInfo.startingAddress.value64, 0u) << "Starting Address isn't 0.";
-			EXPECT_EQ(allocInfo.size.value64, 1_GB) << "Size isn't 1GB.";
+			EXPECT_EQ(allocInfo.startingAddress, 0u) << "Starting Address isn't 0.";
+			EXPECT_EQ(allocInfo.size, 1_GB) << "Size isn't 1GB.";
+		}
+	}
+
+	startingAddress  = 0u;
+	totalSize        = 2_GB + 512_MB + 10_KB;
+	minimumBlockSize = 8_KB;
+
+	{
+		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
+
+		size_t newTestSize = totalSize - 2_KB;
+
+		EXPECT_EQ(buddy.TotalSize(), newTestSize) << "TotalSize isn't 2GB 512MB and 8KB.";
+		EXPECT_EQ(buddy.AvailableSize(), newTestSize) << "AvailableSize isn't 2GB 512MB and 8KB.";
+		EXPECT_EQ(buddy.MinimumBlockSize(), 8_KB) << "MinimumBlockSize isn't 8_KB.";
+
+		EXPECT_EQ(std::size(buddy.GetEightBitBlocks()), 0u) << "There shouldn't be any EightBitBlocks.";
+		EXPECT_EQ(std::size(buddy.GetSixteenBitBlocks()), 0u) << "There shouldn't be any SixteenBitBlocks.";
+		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 3u) << "There should be two ThirtyTwoBitBlock.";
+		EXPECT_EQ(std::size(buddy.GetSixtyFourBitBlocks()), 0u) << "There shouldn't be any SixtyFourBitBlocks.";
+
+		if (const auto& thirtyTwoBitBlocks = buddy.GetThirtyTwoBitBlocks(); !std::empty(thirtyTwoBitBlocks))
+		{
+			size_t testStartingAddress = 0u;
+
+			const TestBuddy::AllocInfo& allocInfo = thirtyTwoBitBlocks.front();
+			EXPECT_EQ(allocInfo.startingAddress, testStartingAddress)
+				<< "Starting Address isn't 0.";
+			EXPECT_EQ(allocInfo.size, 2_GB) << "Size isn't 2GB.";
+
+			testStartingAddress += 2_GB;
+
+			const TestBuddy::AllocInfo& allocInfo1 = thirtyTwoBitBlocks[1];
+			EXPECT_EQ(allocInfo1.startingAddress, testStartingAddress)
+				<< "Starting Address doesn't match.";
+			EXPECT_EQ(allocInfo1.size, 512_MB) << "Size isn't 512MB.";
+
+			testStartingAddress += 512_MB;
+
+			const TestBuddy::AllocInfo& allocInfo2 = thirtyTwoBitBlocks[2];
+			EXPECT_EQ(allocInfo2.startingAddress, testStartingAddress)
+				<< "Starting Address doesn't match.";
+			EXPECT_EQ(allocInfo2.size, 8_KB) << "Size isn't 8KB.";
 		}
 	}
 }
