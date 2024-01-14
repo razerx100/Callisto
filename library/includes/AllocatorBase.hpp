@@ -152,5 +152,20 @@ protected:
 	{
 		return size + (Align(startingAddress, alignment) - startingAddress);
 	}
+
+public:
+	AllocatorBase(const AllocatorBase&) = delete;
+	AllocatorBase& operator=(const AllocatorBase&) = delete;
+
+	inline AllocatorBase(AllocatorBase&& other) noexcept
+		: m_totalSize{ other.m_totalSize }, m_availableSize{ other.m_availableSize } {}
+
+	inline AllocatorBase& operator=(AllocatorBase&& other) noexcept
+	{
+		m_totalSize     = other.m_totalSize;
+		m_availableSize = other.m_availableSize;
+
+		return *this;
+	}
 };
 #endif

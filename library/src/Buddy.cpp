@@ -3,8 +3,8 @@
 #include <algorithm>
 
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize/* = 256_B */)
-	: AllocatorBase{ totalSize }, m_minimumBlockSize{ minimumBlockSize }, m_eightBitBlocks{},
-	m_sixteenBitBlocks{}, m_thirtyTwoBitBlocks{}, m_sixtyFourBitBlocks{}
+	: AllocatorBase{ totalSize }, m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{},
+	m_thirtyTwoBitBlocks{}, m_sixteenBitBlocks{}, m_eightBitBlocks{}
 {
 	// The total size might not be a 2s exponent. In that case, make a block with the largest 2s
 	// exponent. Do the same on the leftover memory until all of the memory is divided into 2s

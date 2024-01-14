@@ -24,9 +24,34 @@ private:
 
 private:
 	size_t                   m_minimumBlockSize;
-	std::vector<AllocInfo8>  m_eightBitBlocks;
-	std::vector<AllocInfo16> m_sixteenBitBlocks;
-	std::vector<AllocInfo32> m_thirtyTwoBitBlocks;
 	std::vector<AllocInfo64> m_sixtyFourBitBlocks;
+	std::vector<AllocInfo32> m_thirtyTwoBitBlocks;
+	std::vector<AllocInfo16> m_sixteenBitBlocks;
+	std::vector<AllocInfo8>  m_eightBitBlocks;
+
+public:
+	Buddy(const Buddy&) = delete;
+	Buddy& operator=(const Buddy&) = delete;
+
+	inline Buddy(Buddy&& other) noexcept
+		: AllocatorBase{ std::move(other) },
+		m_minimumBlockSize{other.m_minimumBlockSize},
+		m_sixtyFourBitBlocks{ std::move(other.m_sixtyFourBitBlocks) },
+		m_thirtyTwoBitBlocks{ std::move(other.m_thirtyTwoBitBlocks) },
+		m_sixteenBitBlocks{ std::move(other.m_sixteenBitBlocks) },
+		m_eightBitBlocks{ std::move(other.m_eightBitBlocks) } {}
+
+	inline Buddy& operator=(Buddy&& other) noexcept
+	{
+		m_totalSize          = other.m_totalSize;
+		m_availableSize      = other.m_availableSize;
+		m_minimumBlockSize   = other.m_minimumBlockSize;
+		m_sixtyFourBitBlocks = std::move(other.m_sixtyFourBitBlocks);
+		m_thirtyTwoBitBlocks = std::move(other.m_thirtyTwoBitBlocks);
+		m_sixteenBitBlocks   = std::move(other.m_sixteenBitBlocks);
+		m_eightBitBlocks     = std::move(other.m_eightBitBlocks);
+
+		return *this;
+	}
 };
 #endif
