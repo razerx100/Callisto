@@ -14,13 +14,6 @@ public:
     std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
 
 private:
-	[[nodiscard]]
-	std::vector<AllocInfo>& GetSuitableBlocks(size_t startingAddress, size_t size) noexcept;
-	[[nodiscard]]
-	std::vector<AllocInfo>& GetSuitableBlockBySize(size_t size) noexcept;
-	[[nodiscard]]
-	std::vector<AllocInfo>& GetSuitableBlockByAddress(size_t startingAddress) noexcept;
-
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;
 
 	void MakeInitialBlocks(size_t blockSize) noexcept;
@@ -30,10 +23,10 @@ private:
 	void MakeNewAvailableBlock(size_t size) noexcept;
 
 private:
-	size_t                 m_minimumBlockSize;
-	std::vector<AllocInfo> m_eightBitBlocks;
-	std::vector<AllocInfo> m_sixteenBitBlocks;
-	std::vector<AllocInfo> m_thirtyTwoBitBlocks;
-	std::vector<AllocInfo> m_sixtyFourBitBlocks;
+	size_t                   m_minimumBlockSize;
+	std::vector<AllocInfo8>  m_eightBitBlocks;
+	std::vector<AllocInfo16> m_sixteenBitBlocks;
+	std::vector<AllocInfo32> m_thirtyTwoBitBlocks;
+	std::vector<AllocInfo64> m_sixtyFourBitBlocks;
 };
 #endif

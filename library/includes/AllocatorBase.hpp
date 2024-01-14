@@ -4,117 +4,7 @@
 #include <array>
 #include <vector>
 #include <optional>
-
-union CUint64
-{
-	std::uint64_t value64;
-	struct
-	{
-		std::uint32_t first;
-		std::uint32_t second;
-
-		[[nodiscard]]
-		std::uint32_t Get(size_t index) const noexcept
-		{
-			if (index == 0)
-				return first;
-			else
-				return second;
-		}
-		void Set(size_t index, std::uint32_t value) noexcept
-		{
-			if (index == 0)
-				first  = value;
-			else
-				second = value;
-		}
-	} value32;
-	struct
-	{
-		std::uint16_t first;
-		std::uint16_t second;
-		std::uint16_t third;
-		std::uint16_t fourth;
-
-		[[nodiscard]]
-		std::uint16_t Get(size_t index) const noexcept
-		{
-			if (index == 0)
-				return first;
-			else if (index == 1)
-				return second;
-			else if (index == 2)
-				return third;
-			else
-				return fourth;
-		}
-		void Set(size_t index, std::uint16_t value) noexcept
-		{
-			if (index == 0)
-				first  = value;
-			else if (index == 1)
-				second = value;
-			else if (index == 2)
-				third  = value;
-			else
-				fourth = value;
-		}
-	} value16;
-	struct
-	{
-		std::uint8_t first;
-		std::uint8_t second;
-		std::uint8_t third;
-		std::uint8_t fourth;
-		std::uint8_t fifth;
-		std::uint8_t sixth;
-		std::uint8_t seventh;
-		std::uint8_t eighth;
-
-		[[nodiscard]]
-		std::uint8_t Get(size_t index) const noexcept
-		{
-			if (index == 0)
-				return first;
-			else if (index == 1)
-				return second;
-			else if (index == 2)
-				return third;
-			else if (index == 3)
-				return fourth;
-			else if (index == 4)
-				return fifth;
-			else if (index == 5)
-				return sixth;
-			else if (index == 6)
-				return seventh;
-			else
-				return eighth;
-		}
-		void Set(size_t index, std::uint8_t value) noexcept
-		{
-			if (index == 0)
-				first  = value;
-			else if (index == 1)
-				second = value;
-			else if (index == 2)
-				third  = value;
-			else if (index == 3)
-				fourth = value;
-			else if (index == 4)
-				fifth = value;
-			else if (index == 5)
-				sixth = value;
-			else if (index == 6)
-				seventh = value;
-			else
-				eighth = value;
-		}
-
-	} value8;
-
-	inline operator std::uint64_t() const noexcept { return value64; }
-};
+#include <concepts>
 
 constexpr size_t operator"" _B(unsigned long long number) noexcept {
 	return static_cast<size_t>(number);
@@ -150,11 +40,76 @@ public:
     virtual std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept = 0;
 
 protected:
+	size_t m_totalSize;
+	size_t m_availableSize;
+
+protected:
+	template<std::integral T>
 	struct AllocInfo
 	{
-		CUint64 startingAddress;
-		CUint64 size;
+		T startingAddress;
+		T size;
+
+		AllocInfo() = default;
+		AllocInfo(T startingAddress, T size) : startingAddress{ startingAddress }, size{ size } {}
+
+		AllocInfo(const AllocInfo& other) noexcept
+			: startingAddress{ other.startingAddress }, size{ other.size } {}
+		AllocInfo(AllocInfo&& other) noexcept
+			: startingAddress{ other.startingAddress }, size{ other.size } {}
+
+		AllocInfo& operator=(const AllocInfo& other) noexcept
+		{
+			startingAddress = other.startingAddress;
+			size            = other.size;
+
+			return *this;
+		}
+		AllocInfo& operator=(AllocInfo&& other) noexcept
+		{
+			startingAddress = other.startingAddress;
+			size            = other.size;
+
+			return *this;
+		}
+
+		template<std::integral G>
+		AllocInfo(const AllocInfo<G>& other) noexcept
+			: startingAddress{ static_cast<T>(other.startingAddress) },
+			size{ static_cast<T>(other.size) } {}
+		template<std::integral G>
+		AllocInfo(AllocInfo<G>&& other) noexcept
+			: startingAddress{ static_cast<T>(other.startingAddress) },
+			size{ static_cast<T>(other.size) } {}
+
+		template<std::integral G>
+		AllocInfo& operator=(const AllocInfo<G>& other) noexcept
+		{
+			startingAddress = static_cast<T>(other.startingAddress);
+			size            = static_cast<T>(other.size);
+
+			return *this;
+		}
+		template<std::integral G>
+		AllocInfo& operator=(AllocInfo<G>&& other) noexcept
+		{
+			startingAddress = static_cast<T>(other.startingAddress);
+			size            = static_cast<T>(other.size);
+
+			return *this;
+		}
 	};
+
+	typedef AllocInfo<std::uint64_t> AllocInfo64;
+	typedef AllocInfo<std::uint32_t> AllocInfo32;
+	typedef AllocInfo<std::uint16_t> AllocInfo16;
+	typedef AllocInfo<std::uint8_t> AllocInfo8;
+
+	template<std::integral T>
+	static constexpr AllocInfo<T> MakeAllocInfo(size_t startingAddress, size_t size) noexcept
+	{
+		return AllocInfo<T>{ static_cast<T>(startingAddress), static_cast<T>(size) };
+	}
 
 protected:
 	[[nodiscard]]
@@ -197,9 +152,5 @@ protected:
 	{
 		return size + (Align(startingAddress, alignment) - startingAddress);
 	}
-
-protected:
-	size_t m_totalSize;
-	size_t m_availableSize;
 };
 #endif

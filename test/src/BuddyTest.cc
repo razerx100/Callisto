@@ -15,19 +15,20 @@ public:
 	[[nodiscard]]
 	inline size_t MinimumBlockSize() const noexcept { return m_buddy.m_minimumBlockSize; }
 
-	using AllocInfo = Buddy::AllocInfo;
+	template<std::integral T>
+	using AllocInfo = Buddy::AllocInfo<T>;
 
 	[[nodiscard]]
-	inline const std::vector<AllocInfo>& GetEightBitBlocks() const noexcept
+	inline const std::vector<AllocInfo<std::uint8_t>>& GetEightBitBlocks() const noexcept
 	{ return m_buddy.m_eightBitBlocks; }
 	[[nodiscard]]
-	inline const std::vector<AllocInfo>& GetSixteenBitBlocks() const noexcept
+	inline const std::vector<AllocInfo<std::uint16_t>>& GetSixteenBitBlocks() const noexcept
 	{ return m_buddy.m_sixteenBitBlocks; }
 	[[nodiscard]]
-	inline const std::vector<AllocInfo>& GetThirtyTwoBitBlocks() const noexcept
+	inline const std::vector<AllocInfo<std::uint32_t>>& GetThirtyTwoBitBlocks() const noexcept
 	{ return m_buddy.m_thirtyTwoBitBlocks; }
 	[[nodiscard]]
-	inline const std::vector<AllocInfo>& GetSixtyFourBitBlocks() const noexcept
+	inline const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
 	{ return m_buddy.m_sixtyFourBitBlocks; }
 
 private:
@@ -54,7 +55,7 @@ TEST(BuddyTest, BuddyInitTest)
 
 		if (const auto& thirtyTwoBitBlocks = buddy.GetThirtyTwoBitBlocks(); !std::empty(thirtyTwoBitBlocks))
 		{
-			const TestBuddy::AllocInfo& allocInfo = thirtyTwoBitBlocks.front();
+			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo = thirtyTwoBitBlocks.front();
 			EXPECT_EQ(allocInfo.startingAddress, 0u) << "Starting Address isn't 0.";
 			EXPECT_EQ(allocInfo.size, 1_GB) << "Size isn't 1GB.";
 		}
@@ -82,7 +83,7 @@ TEST(BuddyTest, BuddyInitTest)
 		{
 			size_t testStartingAddress = 0u;
 
-			const TestBuddy::AllocInfo& allocInfo = sixteenBitBlocks.front();
+			const TestBuddy::AllocInfo<std::uint16_t>& allocInfo = sixteenBitBlocks.front();
 			EXPECT_EQ(allocInfo.startingAddress, testStartingAddress)
 				<< "Starting Address isn't 0.";
 			EXPECT_EQ(allocInfo.size, 8_KB) << "Size isn't 8KB.";
@@ -92,14 +93,14 @@ TEST(BuddyTest, BuddyInitTest)
 		{
 			size_t testStartingAddress = 8_KB;
 
-			const TestBuddy::AllocInfo& allocInfo = thirtyTwoBitBlocks.front();
+			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo = thirtyTwoBitBlocks.front();
 			EXPECT_EQ(allocInfo.startingAddress, testStartingAddress)
 				<< "Starting Address isn't 8KB.";
 			EXPECT_EQ(allocInfo.size, 512_MB) << "Size isn't 512MB.";
 
 			testStartingAddress += 512_MB;
 
-			const TestBuddy::AllocInfo& allocInfo1 = thirtyTwoBitBlocks[1];
+			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo1 = thirtyTwoBitBlocks[1];
 			EXPECT_EQ(allocInfo1.startingAddress, testStartingAddress)
 				<< "Starting Address doesn't match.";
 			EXPECT_EQ(allocInfo1.size, 2_GB) << "Size isn't 2GB.";
