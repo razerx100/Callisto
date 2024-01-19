@@ -22,6 +22,14 @@ private:
 	void MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept;
 	void MakeNewAvailableBlock(size_t size) noexcept;
 
+	[[nodiscard]]
+	std::optional<AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept;
+	[[nodiscard]]
+	AllocInfo64 AllocateOnBlock(
+		size_t blockStartingAddress, size_t blockSize, size_t allocationSize, size_t allocationAlignment,
+		size_t alignedSize
+	) noexcept;
+
 private:
 	size_t                   m_minimumBlockSize;
 	std::vector<AllocInfo64> m_sixtyFourBitBlocks;
@@ -52,6 +60,23 @@ public:
 		m_eightBitBlocks     = std::move(other.m_eightBitBlocks);
 
 		return *this;
+	}
+
+private:
+	template<std::integral T>
+	[[nodiscard]]
+	std::optional<AllocInfo64> AllocateOnBlock(
+		const AllocInfo<T>& info, size_t size, size_t alignment
+	) noexcept {
+		const size_t blockSize       = info.size;
+		const size_t startingAddress = info.startingAddress;
+
+		const size_t alignedSize = GetAlignedSize(startingAddress, alignment, size);
+
+		if (alignedSize <= blockSize)
+			return AllocateOnBlock(startingAddress, blockSize, size, alignment, alignedSize);
+		else
+			return {};
 	}
 };
 #endif

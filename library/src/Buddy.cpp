@@ -183,3 +183,48 @@ std::optional<size_t> Buddy::AllocateN(size_t/* size*/, size_t/* alignment */) n
 {
 	return {};
 }
+
+std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignment) noexcept
+{
+	for (const auto& allocInfo : m_eightBitBlocks)
+		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
+			return *alloctedBlock;
+
+	for (const auto& allocInfo : m_sixteenBitBlocks)
+		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
+			return *alloctedBlock;
+
+	for (const auto& allocInfo : m_thirtyTwoBitBlocks)
+		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
+			return *alloctedBlock;
+
+	for (const auto& allocInfo : m_sixtyFourBitBlocks)
+		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
+			return *alloctedBlock;
+
+	return {};
+}
+
+Buddy::AllocInfo64 Buddy::AllocateOnBlock(
+	size_t blockStartingAddress, size_t blockSize, size_t allocationSize, size_t allocationAlignment,
+	size_t alignedSize
+) noexcept {
+	const auto halfBlockSize = static_cast<size_t>(blockSize / 2u);
+
+	const size_t firstBlockStartingAddress  = blockStartingAddress;
+	const size_t secondBlockStartingAddress = blockStartingAddress + halfBlockSize;
+
+	if (alignedSize <= halfBlockSize)
+	{
+		MakeNewAvailableBlock(secondBlockStartingAddress, halfBlockSize);
+
+		return AllocateOnBlock(
+			firstBlockStartingAddress, halfBlockSize, allocationSize, allocationAlignment, alignedSize
+		);
+	}
+	else
+	{
+		const size_t alignedAddress = Align(blockStartingAddress, allocationAlignment);
+		return AllocInfo64{ alignedAddress, allocationSize };
+	}
+}
