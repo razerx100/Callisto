@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <Buddy.hpp>
+#include <format>
+#include <string>
+#include <cstdint>
 
 class TestBuddy
 {
@@ -8,6 +11,7 @@ public:
 	inline TestBuddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
 		: m_buddy{ startingAddress, totalSize, minimumBlockSize } {}
 
+	// Wrappers for the functions from Buddy.
 	[[nodiscard]]
 	inline size_t TotalSize() const noexcept { return m_buddy.TotalSize(); }
 	[[nodiscard]]
@@ -31,9 +35,110 @@ public:
 	inline const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
 	{ return m_buddy.m_sixtyFourBitBlocks; }
 
+	template<std::integral T>
+	[[nodiscard]]
+	std::optional<Buddy::AllocInfo64> AllocateOnBlock(
+		const AllocInfo<T>& info, size_t size, size_t alignment
+	) noexcept { return m_buddy.AllocateOnBlock(info, size, alignment); }
+
+public:
+	enum class BlocksType
+	{
+		EightBits,
+		SixteenBits,
+		ThirtyTwoBits,
+		SixtyFourBits
+	};
+
+public:
+	// Test functions.
+	void SizeTest(
+		size_t availableSize, size_t totalSize, size_t minimumBlockSize, std::uint_least32_t lineNumber
+	) const;
+	void BlocksCountTest(
+		size_t eightBitsCount, size_t sixteenBitsCount, size_t thirtyTwoBitsCount,
+		size_t sixtyFourBitsCount, std::uint_least32_t lineNumber
+	) const;
+
+	template<std::integral T>
+	void AllocInfoTest(
+		const Buddy::AllocInfo<T>& allocInfo, size_t startingAddress, size_t blockSize,
+		std::uint_least32_t lineNumber
+	) const {
+		EXPECT_EQ(allocInfo.startingAddress, startingAddress)
+			<< std::format("Starting Address isn't {} on the line {}.", startingAddress, lineNumber);
+		EXPECT_EQ(allocInfo.size, blockSize)
+			<< std::format("Size isn't {} on the line {}", blockSize, lineNumber);
+	}
+
+	template<std::integral T>
+	void SpecificBlockTest(
+		const std::vector<Buddy::AllocInfo<T>>& blocks, size_t index, size_t startingAddress,
+		size_t blockSize, std::uint_least32_t lineNumber
+	) const {
+		EXPECT_LT(index, std::size(blocks))
+			<< std::format("Index of the Blocks array doesn't exist on the line {}.", lineNumber);
+
+		const Buddy::AllocInfo<T>& allocInfo = blocks.at(index);
+
+		AllocInfoTest(allocInfo, startingAddress, blockSize, lineNumber);
+	}
+	void SpecificBlockTest(
+		BlocksType type, size_t index, size_t startingAddress, size_t blockSize,
+		std::uint_least32_t lineNumber
+	) const;
+
 private:
 	Buddy m_buddy;
 };
+
+void TestBuddy::SizeTest(
+	size_t availableSize, size_t totalSize, size_t minimumBlockSize,
+	std::uint_least32_t lineNumber
+) const {
+	EXPECT_EQ(AvailableSize(), availableSize)
+		<< std::format("AvailableSize isn't {} on the line {}.", availableSize, lineNumber);
+	EXPECT_EQ(TotalSize(), totalSize)
+		<< std::format("TotalSize isn't {} on the line {}.", totalSize, lineNumber);
+	EXPECT_EQ(MinimumBlockSize(), minimumBlockSize)
+		<< std::format("MinimumBlockSize isn't {} on the line {}.", minimumBlockSize, lineNumber);
+}
+
+void TestBuddy::BlocksCountTest(
+	size_t eightBitsCount, size_t sixteenBitsCount, size_t thirtyTwoBitsCount,
+	size_t sixtyFourBitsCount, std::uint_least32_t lineNumber
+) const {
+	EXPECT_EQ(std::size(GetEightBitBlocks()), eightBitsCount)
+		<< std::format(
+			"There should be {} EightBitsBlocks on the line {}.", eightBitsCount, lineNumber
+		);
+	EXPECT_EQ(std::size(GetSixteenBitBlocks()), sixteenBitsCount)
+		<< std::format(
+			"There should be {} SixteenBitsBlocks on the line {}.", sixteenBitsCount, lineNumber
+		);
+	EXPECT_EQ(std::size(GetThirtyTwoBitBlocks()), thirtyTwoBitsCount)
+		<< std::format(
+			"There should be {} ThirtyTwoBitsBlocks on the line {}.", thirtyTwoBitsCount, lineNumber
+		);
+	EXPECT_EQ(std::size(GetSixtyFourBitBlocks()), sixtyFourBitsCount)
+		<< std::format(
+			"There should be {} SixtyFourBitsBlocks on the line {}.", sixtyFourBitsCount, lineNumber
+		);
+}
+
+void TestBuddy::SpecificBlockTest(
+	BlocksType type, size_t index, size_t startingAddress, size_t blockSize,
+	std::uint_least32_t lineNumber
+) const {
+	if (type == BlocksType::EightBits)
+		SpecificBlockTest(GetEightBitBlocks(), index, startingAddress, blockSize, lineNumber);
+	else if (type == BlocksType::SixteenBits)
+		SpecificBlockTest(GetSixteenBitBlocks(), index, startingAddress, blockSize, lineNumber);
+	else if (type == BlocksType::ThirtyTwoBits)
+		SpecificBlockTest(GetThirtyTwoBitBlocks(), index, startingAddress, blockSize, lineNumber);
+	else if (type == BlocksType::SixtyFourBits)
+		SpecificBlockTest(GetSixtyFourBitBlocks(), index, startingAddress, blockSize, lineNumber);
+}
 
 TEST(BuddyTest, BuddyInitTest)
 {
@@ -44,21 +149,11 @@ TEST(BuddyTest, BuddyInitTest)
 	{
 		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
 
-		EXPECT_EQ(buddy.AvailableSize(), 1_GB) << "AvailableSize isn't 1GB.";
-		EXPECT_EQ(buddy.TotalSize(), 1_GB) << "TotalSize isn't 1GB.";
-		EXPECT_EQ(buddy.MinimumBlockSize(), 16_KB) << "MinimumBlockSize isn't 16_KB.";
+		using enum TestBuddy::BlocksType;
 
-		EXPECT_EQ(std::size(buddy.GetEightBitBlocks()), 0u) << "There shouldn't be any EightBitBlocks.";
-		EXPECT_EQ(std::size(buddy.GetSixteenBitBlocks()), 0u) << "There shouldn't be any SixteenBitBlocks.";
-		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 1u) << "There should be one ThirtyTwoBitBlock.";
-		EXPECT_EQ(std::size(buddy.GetSixtyFourBitBlocks()), 0u) << "There shouldn't be any SixtyFourBitBlocks.";
-
-		if (const auto& thirtyTwoBitBlocks = buddy.GetThirtyTwoBitBlocks(); !std::empty(thirtyTwoBitBlocks))
-		{
-			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo = thirtyTwoBitBlocks.front();
-			EXPECT_EQ(allocInfo.startingAddress, 0u) << "Starting Address isn't 0.";
-			EXPECT_EQ(allocInfo.size, 1_GB) << "Size isn't 1GB.";
-		}
+		buddy.SizeTest(1_GB, 1_GB, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 0u, 1u, 0u, __LINE__);
+		buddy.SpecificBlockTest(ThirtyTwoBits, 0u, 0u, 1_GB, __LINE__);
 	}
 
 	startingAddress  = 0u;
@@ -69,41 +164,39 @@ TEST(BuddyTest, BuddyInitTest)
 		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
 
 		size_t newTestSize = totalSize - 2_KB;
+		using enum TestBuddy::BlocksType;
 
-		EXPECT_EQ(buddy.TotalSize(), newTestSize) << "TotalSize isn't 2GB 512MB and 8KB.";
-		EXPECT_EQ(buddy.AvailableSize(), newTestSize) << "AvailableSize isn't 2GB 512MB and 8KB.";
-		EXPECT_EQ(buddy.MinimumBlockSize(), 8_KB) << "MinimumBlockSize isn't 8_KB.";
+		buddy.SizeTest(newTestSize, newTestSize, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 1u, 2u, 0u, __LINE__);
 
-		EXPECT_EQ(std::size(buddy.GetEightBitBlocks()), 0u) << "There shouldn't be any EightBitBlocks.";
-		EXPECT_EQ(std::size(buddy.GetSixteenBitBlocks()), 1u) << "There should be 1 SixteenBitBlocks.";
-		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 2u) << "There should be two ThirtyTwoBitBlock.";
-		EXPECT_EQ(std::size(buddy.GetSixtyFourBitBlocks()), 0u) << "There shouldn't be any SixtyFourBitBlocks.";
 
-		if (const auto& sixteenBitBlocks = buddy.GetSixteenBitBlocks(); !std::empty(sixteenBitBlocks))
-		{
-			size_t testStartingAddress = 0u;
+		size_t testStartingAddress = 0u;
+		size_t testBlockSize       = 8_KB;
 
-			const TestBuddy::AllocInfo<std::uint16_t>& allocInfo = sixteenBitBlocks.front();
-			EXPECT_EQ(allocInfo.startingAddress, testStartingAddress)
-				<< "Starting Address isn't 0.";
-			EXPECT_EQ(allocInfo.size, 8_KB) << "Size isn't 8KB.";
-		}
+		buddy.SpecificBlockTest(SixteenBits, 0u, testStartingAddress, testBlockSize, __LINE__);
 
-		if (const auto& thirtyTwoBitBlocks = buddy.GetThirtyTwoBitBlocks(); !std::empty(thirtyTwoBitBlocks))
-		{
-			size_t testStartingAddress = 8_KB;
+		testStartingAddress += testBlockSize;
+		testBlockSize        = 512_MB;
 
-			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo = thirtyTwoBitBlocks.front();
-			EXPECT_EQ(allocInfo.startingAddress, testStartingAddress)
-				<< "Starting Address isn't 8KB.";
-			EXPECT_EQ(allocInfo.size, 512_MB) << "Size isn't 512MB.";
+		buddy.SpecificBlockTest(ThirtyTwoBits, 0u, testStartingAddress, testBlockSize, __LINE__);
 
-			testStartingAddress += 512_MB;
+		testStartingAddress += testBlockSize;
+		testBlockSize        = 2_GB;
 
-			const TestBuddy::AllocInfo<std::uint32_t>& allocInfo1 = thirtyTwoBitBlocks[1];
-			EXPECT_EQ(allocInfo1.startingAddress, testStartingAddress)
-				<< "Starting Address doesn't match.";
-			EXPECT_EQ(allocInfo1.size, 2_GB) << "Size isn't 2GB.";
-		}
+		buddy.SpecificBlockTest(ThirtyTwoBits, 1u, testStartingAddress, testBlockSize, __LINE__);
+	}
+}
+
+TEST(BuddyTest, BuddyAllocationTest)
+{
+	constexpr size_t startingAddress  = 0u;
+	constexpr size_t totalSize        = 1_GB;
+	constexpr size_t minimumBlockSize = 16_KB;
+
+	{
+		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
+
+		buddy.SizeTest(1_GB, 1_GB, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 0u, 1u, 0u, __LINE__);
 	}
 }
