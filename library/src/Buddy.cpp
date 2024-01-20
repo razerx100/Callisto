@@ -186,23 +186,38 @@ std::optional<size_t> Buddy::AllocateN(size_t/* size*/, size_t/* alignment */) n
 
 std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignment) noexcept
 {
-	for (const auto& allocInfo : m_eightBitBlocks)
-		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
-			return *alloctedBlock;
+	auto FindAllocationBlock = [this]<std::integral T>(
+		std::vector<Buddy::AllocInfo<T>>&blocks, size_t allocationSize, size_t allocationAlignment
+		) noexcept -> std::optional<Buddy::AllocInfo64>
+	{
+		for (auto it = std::begin(blocks); it != std::end(blocks); ++it)
+		{
+			if (auto alloctedBlock = AllocateOnBlock<T>(it, allocationSize, allocationAlignment);
+				alloctedBlock)
+			{
+				return *alloctedBlock;
+			}
+		}
 
-	for (const auto& allocInfo : m_sixteenBitBlocks)
-		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
-			return *alloctedBlock;
+		return {};
+	};
 
-	for (const auto& allocInfo : m_thirtyTwoBitBlocks)
-		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
-			return *alloctedBlock;
+	std::optional<Buddy::AllocInfo64> allocatedBlock =
+		FindAllocationBlock(m_eightBitBlocks, size, alignment);
 
-	for (const auto& allocInfo : m_sixtyFourBitBlocks)
-		if (auto alloctedBlock = AllocateOnBlock(allocInfo, size, alignment); alloctedBlock)
-			return *alloctedBlock;
+	if (!allocatedBlock)
+		allocatedBlock = FindAllocationBlock(m_sixteenBitBlocks, size, alignment);
 
-	return {};
+	if (!allocatedBlock)
+		allocatedBlock = FindAllocationBlock(m_thirtyTwoBitBlocks, size, alignment);
+
+	if (!allocatedBlock)
+		allocatedBlock = FindAllocationBlock(m_sixtyFourBitBlocks, size, alignment);
+
+	if (allocatedBlock)
+		SortBlocksBySize();
+
+	return allocatedBlock;
 }
 
 Buddy::AllocInfo64 Buddy::AllocateOnBlock(
@@ -227,4 +242,17 @@ Buddy::AllocInfo64 Buddy::AllocateOnBlock(
 		const size_t alignedAddress = Align(blockStartingAddress, allocationAlignment);
 		return AllocInfo64{ alignedAddress, allocationSize };
 	}
+}
+
+void Buddy::SortBlocksBySize() noexcept
+{
+	auto SortBySize = []<std::integral T>(const AllocInfo<T>& info1, const AllocInfo<T>& info2)
+		{
+			return info1.size < info2.size;
+		};
+
+	std::ranges::sort(m_eightBitBlocks, SortBySize);
+	std::ranges::sort(m_sixteenBitBlocks, SortBySize);
+	std::ranges::sort(m_thirtyTwoBitBlocks, SortBySize);
+	std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
 }

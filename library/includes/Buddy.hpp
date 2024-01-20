@@ -22,6 +22,8 @@ private:
 	void MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept;
 	void MakeNewAvailableBlock(size_t size) noexcept;
 
+	void SortBlocksBySize() noexcept;
+
 	[[nodiscard]]
 	std::optional<AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept;
 	[[nodiscard]]
@@ -64,17 +66,35 @@ public:
 
 private:
 	template<std::integral T>
+	void RemoveIterator(std::vector<Buddy::AllocInfo<T>>::iterator infoIt) noexcept
+	{
+		if constexpr (std::is_same_v<T, std::uint8_t>)
+			m_eightBitBlocks.erase(infoIt);
+		else if constexpr (std::is_same_v<T, std::uint16_t>)
+			m_sixteenBitBlocks.erase(infoIt);
+		else if constexpr (std::is_same_v<T, std::uint32_t>)
+			m_thirtyTwoBitBlocks.erase(infoIt);
+		else if constexpr (std::is_same_v<T, std::uint64_t>)
+			m_sixtyFourBitBlocks.erase(infoIt);
+	}
+
+	template<std::integral T>
 	[[nodiscard]]
-	std::optional<AllocInfo64> AllocateOnBlock(
-		const AllocInfo<T>& info, size_t size, size_t alignment
+	std::optional<Buddy::AllocInfo64> AllocateOnBlock(
+		std::vector<Buddy::AllocInfo<T>>::iterator infoIt, size_t size, size_t alignment
 	) noexcept {
+		const Buddy::AllocInfo<T>& info = *infoIt;
+
 		const size_t blockSize       = info.size;
 		const size_t startingAddress = info.startingAddress;
 
-		const size_t alignedSize = GetAlignedSize(startingAddress, alignment, size);
+		const size_t alignedSize     = GetAlignedSize(startingAddress, alignment, size);
 
 		if (alignedSize <= blockSize)
+		{
+			RemoveIterator<T>(infoIt);
 			return AllocateOnBlock(startingAddress, blockSize, size, alignment, alignedSize);
+		}
 		else
 			return {};
 	}
