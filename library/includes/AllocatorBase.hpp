@@ -35,8 +35,12 @@ public:
 	inline size_t AvailableSize() const noexcept { return m_availableSize; }
 
     [[nodiscard]]
+	// Returns an aligned offset where the requested amount of size can be allocated or throws an
+	// exception.
     virtual size_t Allocate(size_t size, size_t alignment) = 0;
     [[nodiscard]]
+	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
+	// optional.
     virtual std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept = 0;
 
 protected:

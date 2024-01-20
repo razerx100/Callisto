@@ -9,8 +9,12 @@ public:
 	Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize = 256_B);
 
     [[nodiscard]]
+	// Returns an aligned offset where the requested amount of size can be allocated or throws an
+	// exception.
     size_t Allocate(size_t size, size_t alignment) override;
     [[nodiscard]]
+	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
+	// optional.
     std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
 
 private:

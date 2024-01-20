@@ -1,6 +1,7 @@
 #include <Buddy.hpp>
 #include <ranges>
 #include <algorithm>
+#include <Exception.hpp>
 
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize/* = 256_B */)
 	: AllocatorBase{ totalSize }, m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{},
@@ -174,14 +175,24 @@ void Buddy::InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize)
 	AssignInitialBlockAddresses(startingAddress);
 }
 
-size_t Buddy::Allocate(size_t/* size */, size_t/* alignment */)
+size_t Buddy::Allocate(size_t size, size_t alignment)
 {
-	return 0u;
+	auto allocationResult = GetAllocInfo(size, alignment);
+
+	if (allocationResult)
+		return (*allocationResult).startingAddress;
+	else
+		throw Exception("AllocationError", "Not enough memory available for allocation.");
 }
 
-std::optional<size_t> Buddy::AllocateN(size_t/* size*/, size_t/* alignment */) noexcept
+std::optional<size_t> Buddy::AllocateN(size_t size, size_t alignment) noexcept
 {
-	return {};
+	auto allocationResult = GetAllocInfo(size, alignment);
+
+	if (allocationResult)
+		return (*allocationResult).startingAddress;
+	else
+		return {};
 }
 
 std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignment) noexcept
