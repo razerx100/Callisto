@@ -35,11 +35,9 @@ public:
 	inline const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
 	{ return m_buddy.m_sixtyFourBitBlocks; }
 
-	template<std::integral T>
 	[[nodiscard]]
-	std::optional<Buddy::AllocInfo64> AllocateOnBlock(
-		const AllocInfo<T>& info, size_t size, size_t alignment
-	) noexcept { return m_buddy.AllocateOnBlock(info, size, alignment); }
+	std::optional<Buddy::AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept
+	{ return m_buddy.GetAllocInfo(size, alignment); }
 
 public:
 	enum class BlocksType
@@ -61,10 +59,10 @@ public:
 	) const;
 
 	template<std::integral T>
-	void AllocInfoTest(
+	static void AllocInfoTest(
 		const Buddy::AllocInfo<T>& allocInfo, size_t startingAddress, size_t blockSize,
 		std::uint_least32_t lineNumber
-	) const {
+	) {
 		EXPECT_EQ(allocInfo.startingAddress, startingAddress)
 			<< std::format("Starting Address isn't {} on the line {}.", startingAddress, lineNumber);
 		EXPECT_EQ(allocInfo.size, blockSize)
@@ -72,10 +70,10 @@ public:
 	}
 
 	template<std::integral T>
-	void SpecificBlockTest(
+	static void SpecificBlockTest(
 		const std::vector<Buddy::AllocInfo<T>>& blocks, size_t index, size_t startingAddress,
 		size_t blockSize, std::uint_least32_t lineNumber
-	) const {
+	) {
 		EXPECT_LT(index, std::size(blocks))
 			<< std::format("Index of the Blocks array doesn't exist on the line {}.", lineNumber);
 
@@ -198,5 +196,35 @@ TEST(BuddyTest, BuddyAllocationTest)
 
 		buddy.SizeTest(1_GB, 1_GB, minimumBlockSize, __LINE__);
 		buddy.BlocksCountTest(0u, 0u, 1u, 0u, __LINE__);
+
+		size_t testAllocationSize = 16_KB;
+
+		{
+			auto allocInfo = buddy.GetAllocInfo(testAllocationSize, 256_B);
+
+			const bool allocationSuccess = allocInfo != std::nullopt;
+			EXPECT_EQ(allocationSuccess, true) << "Failed to Allocate.";
+
+			if (allocInfo)
+			{
+				buddy.AllocInfoTest(*allocInfo, 0u, testAllocationSize, __LINE__);
+
+				buddy.BlocksCountTest(0u, 2u, 14u, 0u, __LINE__);
+			}
+		}
+		{
+			testAllocationSize = 256_KB;
+			auto allocInfo = buddy.GetAllocInfo(testAllocationSize, 256_B);
+
+			const bool allocationSuccess = allocInfo != std::nullopt;
+			EXPECT_EQ(allocationSuccess, true) << "Failed to Allocate.";
+
+			if (allocInfo)
+			{
+				buddy.AllocInfoTest(*allocInfo, 256_KB, testAllocationSize, __LINE__);
+
+				buddy.BlocksCountTest(0u, 2u, 13u, 0u, __LINE__);
+			}
+		}
 	}
 }
