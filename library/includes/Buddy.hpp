@@ -17,6 +17,8 @@ public:
 	// optional.
     std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
 
+	void Deallocate(size_t startingAddress, size_t size) noexcept override;
+
 private:
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;
 

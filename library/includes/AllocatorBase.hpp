@@ -43,6 +43,8 @@ public:
 	// optional.
     virtual std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept = 0;
 
+	virtual void Deallocate(size_t startingAddress, size_t size) noexcept = 0;
+
 protected:
 	size_t m_totalSize;
 	size_t m_availableSize;

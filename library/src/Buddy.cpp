@@ -267,3 +267,9 @@ void Buddy::SortBlocksBySize() noexcept
 	std::ranges::sort(m_thirtyTwoBitBlocks, SortBySize);
 	std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
 }
+
+void Buddy::Deallocate(size_t startingAddress, size_t size) noexcept
+{
+	// First we need to guess the block size.
+	// Then see if the next next/previous block is available, if available, merge them, recursively.
+}
