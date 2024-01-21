@@ -230,7 +230,7 @@ TEST(BuddyTest, BuddyAllocationTest)
 		buddy.AllocationTest(testAllocationSize, 256_B, 256_KB, 0u, 2u, 13u, 0u, __LINE__);
 	}
 
-	startingAddress = 20u;
+	startingAddress = 5_GB + 20u;
 	{
 		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
 
@@ -239,15 +239,15 @@ TEST(BuddyTest, BuddyAllocationTest)
 
 		size_t testAllocationSize      = 16_KB;
 		constexpr size_t testAlignment = 256_B;
-		size_t testStartingAddress     = 0u + testAlignment;
+		size_t testStartingAddress     = 5_GB + testAlignment;
 		buddy.AllocationTest(
-			testAllocationSize, testAlignment, testStartingAddress, 0u, 2u, 14u, 0u, __LINE__
+			testAllocationSize, testAlignment, testStartingAddress, 0u, 1u, 14u, 0u, __LINE__
 		);
 
 		testAllocationSize   = 256_KB;
 		testStartingAddress += 512_KB;
 		buddy.AllocationTest(
-			testAllocationSize, testAlignment, testStartingAddress, 0u, 2u, 13u, 0u, __LINE__
+			testAllocationSize, testAlignment, testStartingAddress, 0u, 1u, 13u, 0u, __LINE__
 		);
 	}
 }
