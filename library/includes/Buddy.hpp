@@ -6,7 +6,10 @@ class Buddy : public AllocatorBase
 {
 	friend class TestBuddy;
 public:
-	Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize = 256_B);
+	Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize);
+	Buddy(
+		size_t startingAddress, size_t totalSize, size_t defaultAlignment, size_t minimumBlockSize
+	);
 
     [[nodiscard]]
 	// Returns an aligned offset where the requested amount of size can be allocated or throws an
@@ -17,7 +20,7 @@ public:
 	// optional.
     std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
 
-	void Deallocate(size_t startingAddress, size_t size) noexcept override;
+	void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept override;
 
 private:
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;
@@ -61,8 +64,7 @@ public:
 
 	inline Buddy& operator=(Buddy&& other) noexcept
 	{
-		m_totalSize          = other.m_totalSize;
-		m_availableSize      = other.m_availableSize;
+		AllocatorBase::operator=(std::move(other));
 		m_startingAddress    = other.m_startingAddress;
 		m_minimumBlockSize   = other.m_minimumBlockSize;
 		m_sixtyFourBitBlocks = std::move(other.m_sixtyFourBitBlocks);

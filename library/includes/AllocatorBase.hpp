@@ -26,7 +26,11 @@ class AllocatorBase
 {
 	friend class TestAllocatorBase;
 public:
-	inline AllocatorBase(size_t totalSize) : m_totalSize{ totalSize }, m_availableSize{ totalSize } {}
+	inline AllocatorBase(size_t totalSize)
+		: m_defaultAlignment{ 0u }, m_totalSize{ totalSize }, m_availableSize{ totalSize } {}
+	inline AllocatorBase(size_t totalSize, size_t defaultAlignment)
+		: m_defaultAlignment{ defaultAlignment }, m_totalSize{ totalSize },
+		m_availableSize{ totalSize } {}
 	virtual ~AllocatorBase() = default;
 
 	[[nodiscard]]
@@ -43,7 +47,27 @@ public:
 	// optional.
     virtual std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept = 0;
 
-	virtual void Deallocate(size_t startingAddress, size_t size) noexcept = 0;
+	// Call the function with the alignment parameter if you had allocated using the allocate
+	// function with the alignment parameter.
+	virtual void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept = 0;
+
+	[[nodiscard]]
+	// Returns an aligned offset where the requested amount of size can be allocated or throws an
+	// exception.
+	inline size_t Allocate(size_t size) { return Allocate(size, m_defaultAlignment); }
+	[[nodiscard]]
+	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
+	// optional.
+	inline std::optional<size_t> AllocateN(size_t size) noexcept
+	{ return AllocateN(size, m_defaultAlignment); }
+
+	// Call the function with the alignment parameter if you had allocated using the allocate
+	// function with the alignment parameter.
+	inline void Deallocate(size_t startingAddress, size_t size) noexcept
+	{ Deallocate(startingAddress, size, m_defaultAlignment); }
+
+private:
+	size_t m_defaultAlignment;
 
 protected:
 	size_t m_totalSize;
@@ -164,12 +188,14 @@ public:
 	AllocatorBase& operator=(const AllocatorBase&) = delete;
 
 	inline AllocatorBase(AllocatorBase&& other) noexcept
-		: m_totalSize{ other.m_totalSize }, m_availableSize{ other.m_availableSize } {}
+		: m_defaultAlignment{ other.m_defaultAlignment }, m_totalSize{ other.m_totalSize },
+		m_availableSize{ other.m_availableSize } {}
 
 	inline AllocatorBase& operator=(AllocatorBase&& other) noexcept
 	{
-		m_totalSize     = other.m_totalSize;
-		m_availableSize = other.m_availableSize;
+		m_defaultAlignment = other.m_defaultAlignment;
+		m_totalSize        = other.m_totalSize;
+		m_availableSize    = other.m_availableSize;
 
 		return *this;
 	}

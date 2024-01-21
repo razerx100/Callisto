@@ -3,8 +3,22 @@
 #include <algorithm>
 #include <Exception.hpp>
 
-Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize/* = 256_B */)
+Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
 	: AllocatorBase{ totalSize }, m_startingAddress{ startingAddress },
+	m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{}, m_thirtyTwoBitBlocks{},
+	m_sixteenBitBlocks{}, m_eightBitBlocks{}
+{
+	// The total size might not be a 2s exponent. In that case, make a block with the largest 2s
+	// exponent. Do the same on the leftover memory until all of the memory is divided into 2s
+	// exponents.
+	// The allocationInfo blocks don't need to have the actual address; we can just add it during
+	// allocation. This way, we can save more memory for the allocation information.
+	InitInitialAvailableBlocks(0u, totalSize);
+}
+
+Buddy::Buddy(
+	size_t startingAddress, size_t totalSize, size_t defaultAlignment, size_t minimumBlockSize
+) : AllocatorBase{ totalSize, defaultAlignment }, m_startingAddress{ startingAddress },
 	m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{}, m_thirtyTwoBitBlocks{},
 	m_sixteenBitBlocks{}, m_eightBitBlocks{}
 {
@@ -272,7 +286,7 @@ void Buddy::SortBlocksBySize() noexcept
 	std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
 }
 
-void Buddy::Deallocate(size_t startingAddress, size_t size) noexcept
+void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
 {
 	// First we need to guess the block size.
 	// Then see if the next next/previous block is available, if available, merge them, recursively.
