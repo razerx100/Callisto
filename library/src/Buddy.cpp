@@ -4,13 +4,16 @@
 #include <Exception.hpp>
 
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize/* = 256_B */)
-	: AllocatorBase{ totalSize }, m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{},
-	m_thirtyTwoBitBlocks{}, m_sixteenBitBlocks{}, m_eightBitBlocks{}
+	: AllocatorBase{ totalSize }, m_startingAddress{ startingAddress },
+	m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{}, m_thirtyTwoBitBlocks{},
+	m_sixteenBitBlocks{}, m_eightBitBlocks{}
 {
 	// The total size might not be a 2s exponent. In that case, make a block with the largest 2s
 	// exponent. Do the same on the leftover memory until all of the memory is divided into 2s
 	// exponents.
-	InitInitialAvailableBlocks(startingAddress, totalSize);
+	// The allocationInfo blocks don't need to have the actual address; we can just add it during
+	// allocation. This way, we can save more memory for the allocation information.
+	InitInitialAvailableBlocks(0u, totalSize);
 }
 
 void Buddy::MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept
@@ -250,7 +253,8 @@ Buddy::AllocInfo64 Buddy::AllocateOnBlock(
 	}
 	else
 	{
-		const size_t alignedAddress = Align(blockStartingAddress, allocationAlignment);
+		const size_t actualStartingAddress = blockStartingAddress + m_startingAddress;
+		const size_t alignedAddress        = Align(actualStartingAddress, allocationAlignment);
 		return AllocInfo64{ alignedAddress, allocationSize };
 	}
 }

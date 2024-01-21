@@ -39,6 +39,7 @@ private:
 	) noexcept;
 
 private:
+	size_t                   m_startingAddress;
 	size_t                   m_minimumBlockSize;
 	std::vector<AllocInfo64> m_sixtyFourBitBlocks;
 	std::vector<AllocInfo32> m_thirtyTwoBitBlocks;
@@ -51,6 +52,7 @@ public:
 
 	inline Buddy(Buddy&& other) noexcept
 		: AllocatorBase{ std::move(other) },
+		m_startingAddress{ other.m_startingAddress },
 		m_minimumBlockSize{other.m_minimumBlockSize},
 		m_sixtyFourBitBlocks{ std::move(other.m_sixtyFourBitBlocks) },
 		m_thirtyTwoBitBlocks{ std::move(other.m_thirtyTwoBitBlocks) },
@@ -61,6 +63,7 @@ public:
 	{
 		m_totalSize          = other.m_totalSize;
 		m_availableSize      = other.m_availableSize;
+		m_startingAddress    = other.m_startingAddress;
 		m_minimumBlockSize   = other.m_minimumBlockSize;
 		m_sixtyFourBitBlocks = std::move(other.m_sixtyFourBitBlocks);
 		m_thirtyTwoBitBlocks = std::move(other.m_thirtyTwoBitBlocks);
@@ -91,10 +94,10 @@ private:
 	) noexcept {
 		const Buddy::AllocInfo<T>& info = *infoIt;
 
-		const size_t blockSize       = info.size;
-		const size_t startingAddress = info.startingAddress;
-
-		const size_t alignedSize     = GetAlignedSize(startingAddress, alignment, size);
+		const size_t blockSize             = info.size;
+		const size_t startingAddress       = info.startingAddress;
+		const size_t actualStartingAddress = startingAddress + m_startingAddress;
+		const size_t alignedSize           = GetAlignedSize(actualStartingAddress, alignment, size);
 
 		if (alignedSize <= blockSize)
 		{
