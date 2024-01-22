@@ -34,10 +34,19 @@ public:
 	[[nodiscard]]
 	inline const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
 	{ return m_buddy.m_sixtyFourBitBlocks; }
+	[[nodiscard]]
+	inline Buddy::AllocInfo64 GetOriginalBlockInfo(
+		size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
+	) const noexcept {
+		return m_buddy.GetOriginalBlockInfo(
+			allocationStartingAddress, allocationSize, allocationAlignment
+		);
+	}
 
 	[[nodiscard]]
 	std::optional<Buddy::AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept
 	{ return m_buddy.GetAllocInfo(size, alignment); }
+
 
 public:
 	enum class BlocksType
@@ -213,7 +222,7 @@ TEST(BuddyTest, BuddyInitTest)
 
 TEST(BuddyTest, BuddyAllocationTest)
 {
-	size_t startingAddress  = 0u;
+	size_t startingAddress            = 0u;
 	constexpr size_t totalSize        = 1_GB;
 	constexpr size_t minimumBlockSize = 16_KB;
 
@@ -250,4 +259,60 @@ TEST(BuddyTest, BuddyAllocationTest)
 			testAllocationSize, testAlignment, testStartingAddress, 0u, 1u, 13u, 0u, __LINE__
 		);
 	}
+}
+
+TEST(BuddyTest, GetOriginalBlockTest)
+{
+	size_t startingAddress            = 5_GB + 24u;
+	constexpr size_t totalSize        = 1_GB;
+	constexpr size_t minimumBlockSize = 16_KB;
+
+	{
+		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
+
+		constexpr size_t allocationSize      = 16_KB;
+		constexpr size_t allocationAlignment = 256_B;
+
+		auto allocInfo = buddy.GetAllocInfo(allocationSize, allocationAlignment);
+
+		const bool allocationSuccess = allocInfo != std::nullopt;
+		EXPECT_EQ(allocationSuccess, true) << "Failed to Allocate.";
+
+		if (allocInfo)
+		{
+			const auto& blockInfo = *allocInfo;
+			buddy.AllocInfoTest(blockInfo, 5_GB + 256_B, allocationSize, __LINE__);
+
+			const auto originalBlock = buddy.GetOriginalBlockInfo(
+				blockInfo.startingAddress, blockInfo.size, allocationAlignment
+			);
+			buddy.AllocInfoTest(originalBlock, 0u, 32_KB, __LINE__);
+		}
+	}
+
+	startingAddress  = 256u;
+
+	{
+		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
+
+		constexpr size_t allocationSize      = 16_KB;
+		constexpr size_t allocationAlignment = 256_B;
+
+		auto allocInfo = buddy.GetAllocInfo(allocationSize, allocationAlignment);
+
+		const bool allocationSuccess = allocInfo != std::nullopt;
+		EXPECT_EQ(allocationSuccess, true) << "Failed to Allocate.";
+
+		if (allocInfo)
+		{
+			const auto& blockInfo = *allocInfo;
+			buddy.AllocInfoTest(blockInfo, 256_B, allocationSize, __LINE__);
+
+			const auto originalBlock = buddy.GetOriginalBlockInfo(
+				blockInfo.startingAddress, blockInfo.size, allocationAlignment
+			);
+			buddy.AllocInfoTest(originalBlock, 0u, 16_KB, __LINE__);
+		}
+	}
+
 }
