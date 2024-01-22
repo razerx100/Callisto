@@ -40,6 +40,10 @@ private:
 		size_t blockStartingAddress, size_t blockSize, size_t allocationSize, size_t allocationAlignment,
 		size_t alignedSize
 	) noexcept;
+	[[nodiscard]]
+	AllocInfo64 GetOriginalBlockInfo(
+		size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
+	) const noexcept;
 
 private:
 	size_t                   m_startingAddress;

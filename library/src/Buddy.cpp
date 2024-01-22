@@ -288,6 +288,25 @@ void Buddy::SortBlocksBySize() noexcept
 
 void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
 {
-	// First we need to guess the block size.
-	// Then see if the next next/previous block is available, if available, merge them, recursively.
+	// First we need to guess the original startingAddress and its size.
+	const AllocInfo64 originalAllocInfo = GetOriginalBlockInfo(startingAddress, size, alignment);
+	// Then see if the next/previous block is available; if available, merge them, recursively.
+}
+
+Buddy::AllocInfo64 Buddy::GetOriginalBlockInfo(
+	size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
+) const noexcept {
+	// Since I am keep all the available block info's startingAddres starting from 0.
+	// aligning the actual starting would offset the same amount. So, subtracting that
+	// should give us the 0 offset original BlockStartingAddress.
+	// As for the original size, to allocate from a block it needs to fit the
+	// blockSize + the offset resulted from the alignment. And since it's a buddy allocator
+	// that means if the offset isn't zero, we will need the next higher order 2s exponent.
+	// So, that should be the original BlockSize.
+	const size_t alignedStartingAddress       = Align(m_startingAddress, allocationAlignment);
+	const size_t originalBlockStartingAddress = allocationStartingAddress - alignedStartingAddress;
+	const size_t offsetDistance               = alignedStartingAddress - m_startingAddress;
+	const size_t originalBlockSize            = GetUpperBound2sExponent(allocationSize + offsetDistance);
+
+	return { originalBlockStartingAddress, originalBlockSize };
 }
