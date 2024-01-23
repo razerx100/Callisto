@@ -33,6 +33,8 @@ private:
 
 	void SortBlocksBySize() noexcept;
 
+	void MergeBuddies(const AllocInfo64& buddy);
+
 	[[nodiscard]]
 	std::optional<AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept;
 	[[nodiscard]]
@@ -44,6 +46,9 @@ private:
 	AllocInfo64 GetOriginalBlockInfo(
 		size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
 	) const noexcept;
+
+	[[nodiscard]]
+	static size_t GetBuddyAddress(size_t buddyAddress, size_t blockSize) noexcept;
 
 private:
 	size_t                   m_startingAddress;

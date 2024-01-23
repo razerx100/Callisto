@@ -290,7 +290,8 @@ void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) no
 {
 	// First we need to guess the original startingAddress and its size.
 	const AllocInfo64 originalAllocInfo = GetOriginalBlockInfo(startingAddress, size, alignment);
-	// Then see if the next/previous block is available; if available, merge them, recursively.
+	// Then get the buddy block if available, merge them, and repeat.
+	MergeBuddies(originalAllocInfo);
 }
 
 Buddy::AllocInfo64 Buddy::GetOriginalBlockInfo(
@@ -309,4 +310,62 @@ Buddy::AllocInfo64 Buddy::GetOriginalBlockInfo(
 	const size_t originalBlockSize            = GetUpperBound2sExponent(allocationSize + offsetDistance);
 
 	return { originalBlockStartingAddress, originalBlockSize };
+}
+
+size_t Buddy::GetBuddyAddress(size_t buddyAddress, size_t blockSize) noexcept
+{
+	return buddyAddress ^ blockSize;
+}
+
+void Buddy::MergeBuddies(const AllocInfo64& buddy)
+{
+	size_t originalBuddyAddress = buddy.startingAddress;
+	size_t blockSize            = buddy.size;
+	size_t searchBuddyAddress   = GetBuddyAddress(originalBuddyAddress, blockSize);
+
+	auto DeletePredicate = [&originalBuddyAddress, &blockSize, &searchBuddyAddress]
+		<std::integral T>(const AllocInfo<T>& allocInfo) noexcept -> bool
+	{
+		const bool buddyFound
+			= allocInfo.size == blockSize && allocInfo.startingAddress == searchBuddyAddress;
+
+		if (buddyFound)
+		{
+			// If the buddy block has been found, merge it. Aka update the values
+			// and keep looking for the next buddy.
+			// The smaller starting address between the two would be the startingAddress
+			// for the merged address.
+			originalBuddyAddress = std::min(originalBuddyAddress, searchBuddyAddress);
+			blockSize           *= 2u;
+			searchBuddyAddress   = GetBuddyAddress(originalBuddyAddress, blockSize);
+		}
+
+		return buddyFound;
+	};
+
+	size_t bitsRequirementSize    = BitsNeededFor(blockSize);
+	size_t bitsRequirementAddress = BitsNeededFor(searchBuddyAddress);
+
+	// No need to iterate if we can't fit the size or the startingAddress inside 8bits.
+	if (bitsRequirementSize <= 8u && bitsRequirementAddress <= 8u)
+		std::erase_if(m_eightBitBlocks, DeletePredicate);
+
+	bitsRequirementSize    = BitsNeededFor(blockSize);
+	bitsRequirementAddress = BitsNeededFor(searchBuddyAddress);
+
+	if (bitsRequirementSize <= 16u && bitsRequirementAddress <= 16u)
+		std::erase_if(m_sixteenBitBlocks, DeletePredicate);
+
+	bitsRequirementSize    = BitsNeededFor(blockSize);
+	bitsRequirementAddress = BitsNeededFor(searchBuddyAddress);
+
+	if (bitsRequirementSize <= 32u && bitsRequirementAddress <= 32u)
+		std::erase_if(m_thirtyTwoBitBlocks, DeletePredicate);
+
+	std::erase_if(m_sixtyFourBitBlocks, DeletePredicate);
+
+	// Now make a new available block with the latest information.
+	MakeNewAvailableBlock(originalBuddyAddress, blockSize);
+	// Since we are adding a new block, we need to sort.
+	SortBlocksBySize();
 }
