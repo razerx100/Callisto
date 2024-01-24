@@ -6,7 +6,7 @@ TEST(AllocatorSTLTest, AllocationTest)
 {
     constexpr size_t memorySize = 256u;
     std::uint8_t memory[memorySize];
-    Allocator allocator{ memory, std::size(memory) };
+    Allocator allocator{ memory, std::size(memory), 256_B };
 
     EXPECT_EQ(allocator.GetAvailableSize(), memorySize) << "Available Size isn't 256bytes";
     EXPECT_EQ(allocator.GetMemorySize(), memorySize) << "Total size isn't 256bytes";

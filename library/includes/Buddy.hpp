@@ -6,6 +6,7 @@ class Buddy : public AllocatorBase
 {
 	friend class TestBuddy;
 public:
+
 	Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize);
 	Buddy(
 		size_t startingAddress, size_t totalSize, size_t defaultAlignment, size_t minimumBlockSize
@@ -21,6 +22,12 @@ public:
     std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
 
 	void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept override;
+
+	// Apparently the functions without the alignment argument get hidden for some reason when you
+	// override. So need to define these again here.
+	using AllocatorBase::Deallocate;
+	using AllocatorBase::Allocate;
+	using AllocatorBase::AllocateN;
 
 private:
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;

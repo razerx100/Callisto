@@ -70,7 +70,7 @@ public:
 
     void deallocate(pointer ptr, size_type size)
     {
-        m_allocator.Deallocate(ptr, size * sizeof(T));
+        m_allocator.Deallocate(ptr, size * sizeof(T), alignof(T));
     }
 
     template<typename X, typename... Args>
