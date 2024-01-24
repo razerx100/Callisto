@@ -332,27 +332,34 @@ TEST(BuddyTest, DeallocationTest)
 		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
 
 		size_t allocationSize                = 16_KB;
+		size_t availableSize                 = totalSize;
 		constexpr size_t allocationAlignment = 256_B;
 
-		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		buddy.SizeTest(availableSize, totalSize, minimumBlockSize, __LINE__);
 		buddy.BlocksCountTest(0u, 0u, 2u, 0u, __LINE__);
 
 		auto startinAddressResult = buddy.AllocateN(allocationSize, allocationAlignment);
 
-		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		availableSize -= 32_KB;
+
+		buddy.SizeTest(availableSize, totalSize, minimumBlockSize, __LINE__);
 		buddy.BlocksCountTest(0u, 1u, 13u, 0u, __LINE__);
 
 		allocationSize = 256_MB;
 		auto startinAddressResult1 = buddy.AllocateN(allocationSize, allocationAlignment);
 
-		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		availableSize -= 512_MB;
+
+		buddy.SizeTest(availableSize, totalSize, minimumBlockSize, __LINE__);
 		buddy.BlocksCountTest(0u, 1u, 14u, 0u, __LINE__);
 
 		if (startinAddressResult1)
 		{
 			buddy.Deallocate(*startinAddressResult1, 256_MB, allocationAlignment);
 
-			buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+			availableSize += 512_MB;
+
+			buddy.SizeTest(availableSize, totalSize, minimumBlockSize, __LINE__);
 			buddy.BlocksCountTest(0u, 1u, 13u, 0u, __LINE__);
 		}
 
@@ -360,7 +367,9 @@ TEST(BuddyTest, DeallocationTest)
 		{
 			buddy.Deallocate(*startinAddressResult, 16_KB, allocationAlignment);
 
-			buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+			availableSize += 32_KB;
+
+			buddy.SizeTest(availableSize, totalSize, minimumBlockSize, __LINE__);
 			buddy.BlocksCountTest(0u, 0u, 2u, 0u, __LINE__);
 		}
 	}
