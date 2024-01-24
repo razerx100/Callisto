@@ -267,6 +267,9 @@ Buddy::AllocInfo64 Buddy::AllocateOnBlock(
 	}
 	else
 	{
+		// Adjust the available size if the allocation was successful.
+		m_availableSize -= blockSize;
+
 		const size_t actualStartingAddress = blockStartingAddress + m_startingAddress;
 		const size_t alignedAddress        = Align(actualStartingAddress, allocationAlignment);
 		return AllocInfo64{ alignedAddress, allocationSize };
@@ -290,6 +293,9 @@ void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) no
 {
 	// First we need to guess the original startingAddress and its size.
 	const AllocInfo64 originalAllocInfo = GetOriginalBlockInfo(startingAddress, size, alignment);
+	// Adjust the available size if the allocation was successful.
+	m_availableSize += originalAllocInfo.size;
+
 	// Then get the buddy block if available, merge them, and repeat.
 	MergeBuddies(originalAllocInfo);
 }
