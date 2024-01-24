@@ -14,6 +14,6 @@ endif()
 
 add_subdirectory(library)
 
-if(ADD_TEST)
+if(ADD_TEST_CALLISTO)
     add_subdirectory(test)
 endif()
