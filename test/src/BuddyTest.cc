@@ -47,6 +47,12 @@ public:
 	std::optional<Buddy::AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept
 	{ return m_buddy.GetAllocInfo(size, alignment); }
 
+    [[nodiscard]]
+    inline std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept
+	{ return m_buddy.AllocateN(size, alignment); }
+
+	inline void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
+	{ m_buddy.Deallocate(startingAddress, size, alignment); }
 
 public:
 	enum class BlocksType
@@ -314,5 +320,48 @@ TEST(BuddyTest, GetOriginalBlockTest)
 			buddy.AllocInfoTest(originalBlock, 0u, 16_KB, __LINE__);
 		}
 	}
+}
 
+TEST(BuddyTest, DeallocationTest)
+{
+	constexpr size_t startingAddress  = 5_GB + 24u;
+	constexpr size_t totalSize        = 2_GB + 256_MB;
+	constexpr size_t minimumBlockSize = 16_KB;
+
+	{
+		TestBuddy buddy{ startingAddress, totalSize, minimumBlockSize };
+
+		size_t allocationSize                = 16_KB;
+		constexpr size_t allocationAlignment = 256_B;
+
+		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 0u, 2u, 0u, __LINE__);
+
+		auto startinAddressResult = buddy.AllocateN(allocationSize, allocationAlignment);
+
+		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 1u, 13u, 0u, __LINE__);
+
+		allocationSize = 256_MB;
+		auto startinAddressResult1 = buddy.AllocateN(allocationSize, allocationAlignment);
+
+		buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+		buddy.BlocksCountTest(0u, 1u, 14u, 0u, __LINE__);
+
+		if (startinAddressResult1)
+		{
+			buddy.Deallocate(*startinAddressResult1, 256_MB, allocationAlignment);
+
+			buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+			buddy.BlocksCountTest(0u, 1u, 13u, 0u, __LINE__);
+		}
+
+		if (startinAddressResult)
+		{
+			buddy.Deallocate(*startinAddressResult, 16_KB, allocationAlignment);
+
+			buddy.SizeTest(totalSize, totalSize, minimumBlockSize, __LINE__);
+			buddy.BlocksCountTest(0u, 0u, 2u, 0u, __LINE__);
+		}
+	}
 }
