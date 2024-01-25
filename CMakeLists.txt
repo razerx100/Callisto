@@ -16,4 +16,4 @@ if(ADD_TEST_CALLISTO)
     add_subdirectory(test)
 endif()
 
-add_library(razer::calisto ALIAS CallistoLib)
+add_library(razer::callisto ALIAS CallistoLib)
