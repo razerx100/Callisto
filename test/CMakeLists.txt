@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(CallistoTest
-    LANGUAGES CXX
-)
-
 file(GLOB_RECURSE SRC src/*.cc)
 
 add_executable(
-    ${PROJECT_NAME} ${SRC}
+    CallistoTest ${SRC}
 )
 
 include(FetchContent)
@@ -31,9 +27,11 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
+    target_compile_options(CallistoTest PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE CallistoLib GTest::gtest_main)
+target_link_libraries(CallistoTest PRIVATE CallistoLib GTest::gtest_main)
 
-add_test(NAME CallistoTest COMMAND ${PROJECT_NAME})
+include(GoogleTest)
+
+gtest_discover_tests(CallistoTest)

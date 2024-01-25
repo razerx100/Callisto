@@ -8,9 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(PROJECT_IS_TOP_LEVEL)
-    set(ADD_HEADERS_TO_PROJECT TRUE)
-endif()
+option(ADD_TEST_CALLISTO "if should build test" OFF)
 
 add_subdirectory(library)
 

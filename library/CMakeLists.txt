@@ -1,19 +1,13 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(CallistoLib
-    LANGUAGES CXX
-)
-
 file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp)
 
-add_library(${PROJECT_NAME}
+add_library(CallistoLib
     ${SRC}
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC includes/)
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:_DEBUG>" "$<$<CONFIG:RELEASE>:NDEBUG>")
+target_include_directories(CallistoLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes/)
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
+    target_compile_options(CallistoLib PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
 endif()
