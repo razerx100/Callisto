@@ -27,7 +27,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 if(MSVC)
-    target_compile_options(CallistoTest PRIVATE /fp:fast /MP /EHa /Ot /W4 /Gy)
+    target_compile_options(CallistoTest PRIVATE /fp:fast /MP /Ot /W4 /Gy)
 endif()
 
 target_link_libraries(CallistoTest PRIVATE CallistoLib GTest::gtest_main)

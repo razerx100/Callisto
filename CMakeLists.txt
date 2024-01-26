@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(ADD_TEST_CALLISTO "if should build test" OFF)
+option(ADD_TEST_CALLISTO "If test should be built" OFF)
 
 add_subdirectory(library)
 
