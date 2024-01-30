@@ -13,6 +13,7 @@ option(ADD_TEST_CALLISTO "If test should be built" OFF)
 add_subdirectory(library)
 
 if(ADD_TEST_CALLISTO)
+    enable_testing()
     add_subdirectory(test)
 endif()
 

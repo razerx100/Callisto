@@ -24,8 +24,6 @@ endif()
 
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
-
 if(MSVC)
     target_compile_options(CallistoTest PRIVATE /fp:fast /MP /Ot /W4 /Gy)
 endif()
