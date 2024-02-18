@@ -1,6 +1,8 @@
 #ifndef BUDDY_HPP_
 #define BUDDY_HPP_
 #include <AllocatorBase.hpp>
+#include <ranges>
+#include <algorithm>
 
 class Buddy : public AllocatorBase
 {
@@ -37,8 +39,6 @@ private:
 
 	void MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept;
 	void MakeNewAvailableBlock(size_t size) noexcept;
-
-	void SortBlocksBySize() noexcept;
 
 	void MergeBuddies(const AllocInfo64& buddy);
 
@@ -129,9 +129,23 @@ private:
 	template<std::integral T>
 	static void AddAllocBlock(
 		std::vector<AllocatorBase::AllocInfo<T>>& blocks, size_t startingAddress, size_t size
-	) noexcept
-	{
-		blocks.emplace_back(MakeAllocInfo<T>(startingAddress, size));
+	) noexcept {
+		// The blocks container should be sorted by size. So, let's use std::lower_bound to find
+		// where to add this new block. So, the container stays sorted.
+		auto result = std::ranges::lower_bound(blocks, size, {},
+			[](const AllocatorBase::AllocInfo<T>& element)
+			{
+				return element.size;
+			}
+		);
+
+		// If any larger element doesn't exist, add the new block at the end. Otherwise,
+		// the result would either be an element of the same size or a larger one. So,
+		// we should insert the new element before it.
+		if (result == std::end(blocks))
+			blocks.emplace_back(MakeAllocInfo<T>(startingAddress, size));
+		else
+			blocks.insert(result, MakeAllocInfo<T>(startingAddress, size));
 	}
 };
 #endif

@@ -1,6 +1,4 @@
 #include <Buddy.hpp>
-#include <ranges>
-#include <algorithm>
 #include <Exception.hpp>
 
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
@@ -218,6 +216,7 @@ std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignm
 		std::vector<Buddy::AllocInfo<T>>&blocks, size_t allocationSize, size_t allocationAlignment
 		) noexcept -> std::optional<Buddy::AllocInfo64>
 	{
+		// I can probably do binary_search here.
 		for (auto it = std::begin(blocks); it != std::end(blocks); ++it)
 		{
 			if (auto alloctedBlock = AllocateOnBlock<T>(it, allocationSize, allocationAlignment);
@@ -241,9 +240,6 @@ std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignm
 
 	if (!allocatedBlock)
 		allocatedBlock = FindAllocationBlock(m_sixtyFourBitBlocks, size, alignment);
-
-	if (allocatedBlock)
-		SortBlocksBySize();
 
 	return allocatedBlock;
 }
@@ -274,19 +270,6 @@ Buddy::AllocInfo64 Buddy::AllocateOnBlock(
 		const size_t alignedAddress        = Align(actualStartingAddress, allocationAlignment);
 		return AllocInfo64{ alignedAddress, allocationSize };
 	}
-}
-
-void Buddy::SortBlocksBySize() noexcept
-{
-	auto SortBySize = []<std::integral T>(const AllocInfo<T>& info1, const AllocInfo<T>& info2)
-		{
-			return info1.size < info2.size;
-		};
-
-	std::ranges::sort(m_eightBitBlocks, SortBySize);
-	std::ranges::sort(m_sixteenBitBlocks, SortBySize);
-	std::ranges::sort(m_thirtyTwoBitBlocks, SortBySize);
-	std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
 }
 
 void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
@@ -337,7 +320,7 @@ void Buddy::MergeBuddies(const AllocInfo64& buddy)
 
 		if (buddyFound)
 		{
-			// If the buddy block has been found, merge it. Aka update the values
+			// If the buddy block has been found, remove it and merge/update the values
 			// and keep looking for the next buddy.
 			// The smaller starting address between the two would be the startingAddress
 			// for the merged address.
@@ -372,6 +355,4 @@ void Buddy::MergeBuddies(const AllocInfo64& buddy)
 
 	// Now make a new available block with the latest information.
 	MakeNewAvailableBlock(originalBuddyAddress, blockSize);
-	// Since we are adding a new block, we need to sort.
-	SortBlocksBySize();
 }
