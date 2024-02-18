@@ -36,13 +36,13 @@ void Buddy::MakeNewAvailableBlock(size_t startingAddress, size_t size) noexcept
 	const size_t bitsRequirementAddress = BitsNeededFor(startingAddress);
 
 	if (bitsRequirementAddress <= 8u && bitsRequirementSize <= 8u)
-		m_eightBitBlocks.emplace_back(MakeAllocInfo<std::uint8_t>(startingAddress, size));
+		AddAllocBlock(m_eightBitBlocks, startingAddress, size);
 	else if (bitsRequirementAddress <= 16u && bitsRequirementSize <= 16u)
-		m_sixteenBitBlocks.emplace_back(MakeAllocInfo<std::uint16_t>(startingAddress, size));
+		AddAllocBlock(m_sixteenBitBlocks, startingAddress, size);
 	else if (bitsRequirementAddress <= 32u && bitsRequirementSize <= 32u)
-		m_thirtyTwoBitBlocks.emplace_back(MakeAllocInfo<std::uint32_t>(startingAddress, size));
+		AddAllocBlock(m_thirtyTwoBitBlocks, startingAddress, size);
 	else
-		m_sixtyFourBitBlocks.emplace_back(MakeAllocInfo<std::uint64_t>(startingAddress, size));
+		AddAllocBlock(m_sixtyFourBitBlocks, startingAddress, size);
 }
 
 void Buddy::MakeNewAvailableBlock(size_t size) noexcept
@@ -51,13 +51,13 @@ void Buddy::MakeNewAvailableBlock(size_t size) noexcept
 	const size_t startingAddress     = 0u;
 
 	if (bitsRequirementSize <= 8u)
-		m_eightBitBlocks.emplace_back(MakeAllocInfo<std::uint8_t>(startingAddress, size));
+		AddAllocBlock(m_eightBitBlocks, startingAddress, size);
 	else if (bitsRequirementSize <= 16u)
-		m_sixteenBitBlocks.emplace_back(MakeAllocInfo<std::uint16_t>(startingAddress, size));
+		AddAllocBlock(m_sixteenBitBlocks, startingAddress, size);
 	else if (bitsRequirementSize <= 32u)
-		m_thirtyTwoBitBlocks.emplace_back(MakeAllocInfo<std::uint32_t>(startingAddress, size));
+		AddAllocBlock(m_thirtyTwoBitBlocks, startingAddress, size);
 	else
-		m_sixtyFourBitBlocks.emplace_back(MakeAllocInfo<std::uint64_t>(startingAddress, size));
+		AddAllocBlock(m_sixtyFourBitBlocks, startingAddress, size);
 }
 
 void Buddy::MakeInitialBlocks(size_t blockSize) noexcept

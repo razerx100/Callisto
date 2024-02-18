@@ -125,5 +125,13 @@ private:
 		else
 			return {};
 	}
+
+	template<std::integral T>
+	static void AddAllocBlock(
+		std::vector<AllocatorBase::AllocInfo<T>>& blocks, size_t startingAddress, size_t size
+	) noexcept
+	{
+		blocks.emplace_back(MakeAllocInfo<T>(startingAddress, size));
+	}
 };
 #endif
