@@ -212,30 +212,18 @@ std::optional<size_t> Buddy::AllocateN(size_t size, size_t alignment) noexcept
 
 std::optional<Buddy::AllocInfo64> Buddy::GetAllocInfo(size_t size, size_t alignment) noexcept
 {
-	auto FindAllocationBlock = [this]<std::integral T>(
-		std::vector<Buddy::AllocInfo<T>>&blocks, size_t allocationSize, size_t allocationAlignment
-		) noexcept -> std::optional<Buddy::AllocInfo64>
-	{
-		// I can probably do binary_search here.
-		for (auto it = std::begin(blocks); it != std::end(blocks); ++it)
-		{
-			if (auto alloctedBlock = AllocateOnBlock<T>(it, allocationSize, allocationAlignment);
-				alloctedBlock)
-			{
-				return *alloctedBlock;
-			}
-		}
+	std::optional<Buddy::AllocInfo64> allocatedBlock{};
 
-		return {};
-	};
+	const size_t bitsRequirementSize = BitsNeededFor(size);
 
-	std::optional<Buddy::AllocInfo64> allocatedBlock =
-		FindAllocationBlock(m_eightBitBlocks, size, alignment);
+	// Only iterate the blocks which can fit the required bits.
+	if (bitsRequirementSize <= 8u && !allocatedBlock)
+		allocatedBlock = FindAllocationBlock(m_eightBitBlocks, size, alignment);
 
-	if (!allocatedBlock)
+	if (bitsRequirementSize <= 16u && !allocatedBlock)
 		allocatedBlock = FindAllocationBlock(m_sixteenBitBlocks, size, alignment);
 
-	if (!allocatedBlock)
+	if (bitsRequirementSize <= 32u && !allocatedBlock)
 		allocatedBlock = FindAllocationBlock(m_thirtyTwoBitBlocks, size, alignment);
 
 	if (!allocatedBlock)

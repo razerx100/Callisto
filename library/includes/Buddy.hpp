@@ -147,5 +147,22 @@ private:
 		else
 			blocks.insert(result, MakeAllocInfo<T>(startingAddress, size));
 	}
+
+	template<std::integral T>
+	std::optional<Buddy::AllocInfo64> FindAllocationBlock(
+		std::vector<Buddy::AllocInfo<T>>& blocks, size_t allocationSize, size_t allocationAlignment
+	) noexcept {
+		// I can probably do binary_search here.
+		for (auto it = std::begin(blocks); it != std::end(blocks); ++it)
+		{
+			if (auto alloctedBlock = AllocateOnBlock<T>(it, allocationSize, allocationAlignment);
+				alloctedBlock)
+			{
+				return *alloctedBlock;
+			}
+		}
+
+		return {};
+	}
 };
 #endif
