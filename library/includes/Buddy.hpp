@@ -130,18 +130,18 @@ private:
 	static void AddAllocBlock(
 		std::vector<AllocatorBase::AllocInfo<T>>& blocks, size_t startingAddress, size_t size
 	) noexcept {
-		// The blocks container should be sorted by size. So, let's use std::lower_bound to find
+		// The blocks container should be sorted by size. So, let's use std::upper_bound to find
 		// where to add this new block. So, the container stays sorted.
-		auto result = std::ranges::lower_bound(blocks, size, {},
+		auto result = std::ranges::upper_bound(blocks, size, {},
 			[](const AllocatorBase::AllocInfo<T>& element)
 			{
 				return element.size;
 			}
 		);
 
-		// If any larger element doesn't exist, add the new block at the end. Otherwise,
-		// the result would either be an element of the same size or a larger one. So,
-		// we should insert the new element before it.
+		// If no larger element exists, add the new block at the end. Otherwise,
+		// the result would be an element which is the next larger value from the given one.
+		// So, we should insert the new element before it.
 		if (result == std::end(blocks))
 			blocks.emplace_back(MakeAllocInfo<T>(startingAddress, size));
 		else
