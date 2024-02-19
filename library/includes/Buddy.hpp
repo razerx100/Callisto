@@ -109,9 +109,9 @@ private:
 	static void AddAllocBlock(
 		std::vector<AllocatorBase::AllocInfo<T>>& blocks, size_t startingAddress, size_t size
 	) noexcept {
-		// The blocks container should be sorted by size. So, let's use std::lower_bound to find
+		// The blocks container should be sorted by size. So, let's use std::upper_bound to find
 		// where to add this new block. So, the container stays sorted.
-		auto result = std::ranges::lower_bound(blocks, size, {},
+		auto result = std::ranges::upper_bound(blocks, size, {},
 			[](const AllocatorBase::AllocInfo<T>& element)
 			{
 				return element.size;
