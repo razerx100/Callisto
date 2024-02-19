@@ -81,107 +81,82 @@ void Buddy::AssignInitialBlockAddresses(size_t startingAddress) noexcept
 {
 	// Try to assign the address to the smallest blocks first. If they can't fit the address
 	// try to fit it in a bigger block.
-
 	const size_t bitsRequirementAddress = BitsNeededFor(startingAddress);
-	auto SortBySize = []<std::integral T>(const AllocInfo<T>& info1, const AllocInfo<T>& info2)
-		{
-			return info1.size < info2.size;
-		};
+
+	auto InsertContainerAtFront = []<std::integral T, std::integral G>
+		(std::vector<Buddy::AllocInfo<T>>& receiver, std::vector<Buddy::AllocInfo<G>>& giver)
+	{
+		receiver.insert(std::begin(receiver), std::begin(giver), std::end(giver));
+		// We want to move the elements, so empty the giver container.
+		giver = std::vector<Buddy::AllocInfo<G>>{};
+	};
 
 	// First check the lowest bit requirements to fit the address. And move all the smaller
-	// blocks.
-	if (bitsRequirementAddress <= 8u)
-	{
-		std::ranges::sort(m_eightBitBlocks, SortBySize);
-	}
-
-	else if (bitsRequirementAddress <= 16u)
-	{
-		std::ranges::move(m_eightBitBlocks, std::back_inserter(m_sixteenBitBlocks));
-
-		std::ranges::sort(m_sixteenBitBlocks, SortBySize);
-	}
+	// blocks. If the bitsRequirement is 8bits, there is not need to move.
+	if (bitsRequirementAddress <= 16u)
+		InsertContainerAtFront(m_sixteenBitBlocks, m_eightBitBlocks);
 	else if (bitsRequirementAddress <= 32u)
 	{
-		std::ranges::move(m_eightBitBlocks, std::back_inserter(m_thirtyTwoBitBlocks));
-		std::ranges::move(m_sixteenBitBlocks, std::back_inserter(m_thirtyTwoBitBlocks));
-
-		std::ranges::sort(m_thirtyTwoBitBlocks, SortBySize);
+		// To keep the values sorted, we have to insert the larger blocks first.
+		InsertContainerAtFront(m_thirtyTwoBitBlocks, m_sixteenBitBlocks);
+		InsertContainerAtFront(m_thirtyTwoBitBlocks, m_eightBitBlocks);
 	}
 	else
 	{
-		std::ranges::move(m_eightBitBlocks, std::back_inserter(m_thirtyTwoBitBlocks));
-		std::ranges::move(m_sixteenBitBlocks, std::back_inserter(m_thirtyTwoBitBlocks));
-		std::ranges::move(m_sixteenBitBlocks, std::back_inserter(m_thirtyTwoBitBlocks));
-
-		std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
+		InsertContainerAtFront(m_sixtyFourBitBlocks, m_thirtyTwoBitBlocks);
+		InsertContainerAtFront(m_sixtyFourBitBlocks, m_sixteenBitBlocks);
+		InsertContainerAtFront(m_sixtyFourBitBlocks, m_eightBitBlocks);
 	}
 
 	// Try to assign the addresses now. If a blockSize can't fit it anymore. Move the rest of
 	// the blocks to a bigger blockList.
 	// It's fine to start from the smallest one, since we have already moved the blocks from
 	// the smaller blockLists. So, the address will be assigned on the correct BlockLists.
+	auto AssignAddress = []<std::integral T>
+		(std::vector<Buddy::AllocInfo<T>>&blocks, size_t& startingAddress, size_t bitCount)
 	{
-		auto it = std::begin(m_eightBitBlocks);
-		for (; it != std::end(m_eightBitBlocks); ++it)
+		auto it = std::begin(blocks);
+		for (; it != std::end(blocks); ++it)
 		{
-			AllocInfo8& info = *it;
-			info.startingAddress = static_cast<std::uint8_t>(startingAddress);
+			Buddy::AllocInfo<T>& info = *it;
+			info.startingAddress = static_cast<T>(startingAddress);
 
 			startingAddress += info.size;
 
-			if (BitsNeededFor(startingAddress) > 8u)
+			// Break if we can't fit the starting address anymore.
+			if (BitsNeededFor(startingAddress) > bitCount)
 				break;
 		}
 
-		std::move(it, std::end(m_eightBitBlocks), std::back_inserter(m_sixteenBitBlocks));
-		std::ranges::sort(m_sixteenBitBlocks, SortBySize);
-	}
+		return it;
+	};
 
+	auto ManageAddress = [AssignAddress]<std::integral T, std::integral G>
+		(
+			std::vector<Buddy::AllocInfo<T>>& largerBlocks,
+			std::vector<Buddy::AllocInfo<G>>& currentBlocks, size_t& startingAddress, size_t bitCount
+		)
 	{
-		auto it = std::begin(m_sixteenBitBlocks);
-		for (; it != std::end(m_sixteenBitBlocks); ++it)
-		{
-			AllocInfo16& info = *it;
-			info.startingAddress = static_cast<std::uint16_t>(startingAddress);
+		auto it = AssignAddress(currentBlocks, startingAddress, bitCount);
 
-			startingAddress += info.size;
+		// If we have failed to assign addresses to all of the blocks because the address couldn't
+		// be fit anymore, move the rest of the blocks to a larger block container.
+		// But I feel like this is kinda useless since I only store addresses relative to 0. But just
+		// in case.
+		largerBlocks.insert(std::begin(largerBlocks), it, std::end(currentBlocks));
+		currentBlocks.erase(it, std::end(currentBlocks));
+	};
 
-			if (BitsNeededFor(startingAddress) > 16u)
-				break;
-		}
+	if (bitsRequirementAddress <= 8u)
+		ManageAddress(m_sixteenBitBlocks, m_eightBitBlocks, startingAddress, 8u);
 
-		std::move(it, std::end(m_sixteenBitBlocks), std::back_inserter(m_thirtyTwoBitBlocks));
-		std::ranges::sort(m_thirtyTwoBitBlocks, SortBySize);
-	}
+	if (bitsRequirementAddress <= 16u)
+		ManageAddress(m_thirtyTwoBitBlocks, m_sixteenBitBlocks, startingAddress, 16u);
 
-	{
-		auto it = std::begin(m_thirtyTwoBitBlocks);
-		for (; it != std::end(m_thirtyTwoBitBlocks); ++it)
-		{
-			AllocInfo32& info = *it;
-			info.startingAddress = static_cast<std::uint32_t>(startingAddress);
+	if (bitsRequirementAddress <= 32u)
+		ManageAddress(m_sixtyFourBitBlocks, m_thirtyTwoBitBlocks, startingAddress, 32u);
 
-			startingAddress += info.size;
-
-			if (BitsNeededFor(startingAddress) > 32u)
-				break;
-		}
-
-		std::move(it, std::end(m_thirtyTwoBitBlocks), std::back_inserter(m_sixtyFourBitBlocks));
-		std::ranges::sort(m_sixtyFourBitBlocks, SortBySize);
-	}
-
-	{
-		auto it = std::begin(m_sixtyFourBitBlocks);
-		for (; it != std::end(m_sixtyFourBitBlocks); ++it)
-		{
-			AllocInfo64& info = *it;
-			info.startingAddress = startingAddress;
-
-			startingAddress += info.size;
-		}
-	}
+	AssignAddress(m_sixtyFourBitBlocks, startingAddress, 64u);
 }
 
 void Buddy::InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept
