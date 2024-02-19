@@ -106,27 +106,6 @@ private:
 	}
 
 	template<std::integral T>
-	[[nodiscard]]
-	std::optional<Buddy::AllocInfo64> AllocateOnBlock(
-		std::vector<Buddy::AllocInfo<T>>::iterator infoIt, size_t size, size_t alignment
-	) noexcept {
-		const Buddy::AllocInfo<T>& info = *infoIt;
-
-		const size_t blockSize             = info.size;
-		const size_t startingAddress       = info.startingAddress;
-		const size_t actualStartingAddress = startingAddress + m_startingAddress;
-		const size_t alignedSize           = GetAlignedSize(actualStartingAddress, alignment, size);
-
-		if (alignedSize <= blockSize)
-		{
-			RemoveIterator<T>(infoIt);
-			return AllocateOnBlock(startingAddress, blockSize, size, alignment, alignedSize);
-		}
-		else
-			return {};
-	}
-
-	template<std::integral T>
 	static void AddAllocBlock(
 		std::vector<AllocatorBase::AllocInfo<T>>& blocks, size_t startingAddress, size_t size
 	) noexcept {
@@ -152,17 +131,40 @@ private:
 	std::optional<Buddy::AllocInfo64> FindAllocationBlock(
 		std::vector<Buddy::AllocInfo<T>>& blocks, size_t allocationSize, size_t allocationAlignment
 	) noexcept {
-		// I can probably do binary_search here.
-		for (auto it = std::begin(blocks); it != std::end(blocks); ++it)
-		{
-			if (auto alloctedBlock = AllocateOnBlock<T>(it, allocationSize, allocationAlignment);
-				alloctedBlock)
+		auto result = std::lower_bound(
+			std::begin(blocks), std::end(blocks), allocationSize,
+			[allocationAlignment, startingAddress = m_startingAddress]
+			(const AllocatorBase::AllocInfo<T>& info, size_t allocationSize)
 			{
-				return *alloctedBlock;
-			}
-		}
+				const size_t blockSize             = info.size;
+				const size_t startingAddressOffset = info.startingAddress;
+				const size_t actualStartingAddress = startingAddressOffset + startingAddress;
+				const size_t alignedSize           = GetAlignedSize(
+					actualStartingAddress, allocationAlignment, allocationSize
+				);
 
-		return {};
+				return blockSize < alignedSize;
+			}
+		);
+
+		// If a result is found, it should the required size or more. So, we can allocate in it.
+		if (result != std::end(blocks))
+		{
+			const AllocatorBase::AllocInfo<T>& info = *result;
+			const size_t blockSize                  = info.size;
+			const size_t startingAddressOffset      = info.startingAddress;
+			const size_t actualStartingAddress      = startingAddressOffset + m_startingAddress;
+			const size_t alignedSize                = GetAlignedSize(
+				actualStartingAddress, allocationAlignment, allocationSize
+			);
+
+			RemoveIterator<T>(result);
+			return AllocateOnBlock(
+				startingAddressOffset, blockSize, allocationSize, allocationAlignment, alignedSize
+			);
+		}
+		else
+			return {};
 	}
 };
 #endif
