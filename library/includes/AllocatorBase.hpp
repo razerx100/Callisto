@@ -26,17 +26,17 @@ class AllocatorBase
 {
 	friend class TestAllocatorBase;
 public:
-	inline AllocatorBase(size_t totalSize)
+	AllocatorBase(size_t totalSize)
 		: m_defaultAlignment{ 0u }, m_totalSize{ totalSize }, m_availableSize{ totalSize } {}
-	inline AllocatorBase(size_t totalSize, size_t defaultAlignment)
+	AllocatorBase(size_t totalSize, size_t defaultAlignment)
 		: m_defaultAlignment{ defaultAlignment }, m_totalSize{ totalSize },
 		m_availableSize{ totalSize } {}
 	virtual ~AllocatorBase() = default;
 
 	[[nodiscard]]
-	inline size_t TotalSize() const noexcept { return m_totalSize; }
+	size_t TotalSize() const noexcept { return m_totalSize; }
 	[[nodiscard]]
-	inline size_t AvailableSize() const noexcept { return m_availableSize; }
+	size_t AvailableSize() const noexcept { return m_availableSize; }
 
     [[nodiscard]]
 	// Returns an aligned offset where the requested amount of size can be allocated or throws an
@@ -54,16 +54,16 @@ public:
 	[[nodiscard]]
 	// Returns an aligned offset where the requested amount of size can be allocated or throws an
 	// exception.
-	inline size_t Allocate(size_t size) { return Allocate(size, m_defaultAlignment); }
+	size_t Allocate(size_t size) { return Allocate(size, m_defaultAlignment); }
 	[[nodiscard]]
 	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
 	// optional.
-	inline std::optional<size_t> AllocateN(size_t size) noexcept
+	std::optional<size_t> AllocateN(size_t size) noexcept
 	{ return AllocateN(size, m_defaultAlignment); }
 
 	// Call the function with the alignment parameter if you had allocated using the allocate
 	// function with the alignment parameter.
-	inline void Deallocate(size_t startingAddress, size_t size) noexcept
+	void Deallocate(size_t startingAddress, size_t size) noexcept
 	{ Deallocate(startingAddress, size, m_defaultAlignment); }
 
 private:
@@ -148,7 +148,7 @@ protected:
 	// Aligns the address to the alignment.
 	// Ex: fn(address 18, alignment 16) = 32.
 	[[nodiscard]]
-	inline static size_t Align(size_t address, size_t alignment) noexcept
+	static size_t Align(size_t address, size_t alignment) noexcept
 	{
 		return (address + (alignment - 1u)) & ~(alignment - 1u);
 	}
@@ -156,7 +156,7 @@ protected:
 	// Gets the upperBound 2s Exponent.
 	// Ex: fn(48) = 64.
 	[[nodiscard]]
-	inline static size_t GetUpperBound2sExponent(size_t size) noexcept
+	static size_t GetUpperBound2sExponent(size_t size) noexcept
 	{
 		size_t result = 1u;
 		for (; result < size; result <<= 1u);
@@ -167,7 +167,7 @@ protected:
 	// Gets the lowerBound 2s Exponent.
 	// Ex: fn(48) = 32.
 	[[nodiscard]]
-	inline static size_t GetLowerBound2sExponent(size_t size) noexcept
+	static size_t GetLowerBound2sExponent(size_t size) noexcept
 	{
 		size_t result = 0x8000000000000000lu;
 		for (; result > size; result >>= 1u);
@@ -178,7 +178,7 @@ protected:
 	// Gets the total size after the starting address has been aligned.
 	// Ex: fn(18, 16, 64) = 78.
 	[[nodiscard]]
-	inline static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept
+	static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept
 	{
 		return size + (Align(startingAddress, alignment) - startingAddress);
 	}
@@ -187,11 +187,11 @@ public:
 	AllocatorBase(const AllocatorBase&) = delete;
 	AllocatorBase& operator=(const AllocatorBase&) = delete;
 
-	inline AllocatorBase(AllocatorBase&& other) noexcept
+	AllocatorBase(AllocatorBase&& other) noexcept
 		: m_defaultAlignment{ other.m_defaultAlignment }, m_totalSize{ other.m_totalSize },
 		m_availableSize{ other.m_availableSize } {}
 
-	inline AllocatorBase& operator=(AllocatorBase&& other) noexcept
+	AllocatorBase& operator=(AllocatorBase&& other) noexcept
 	{
 		m_defaultAlignment = other.m_defaultAlignment;
 		m_totalSize        = other.m_totalSize;

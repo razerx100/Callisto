@@ -5,13 +5,13 @@
 
 class Exception : public std::exception {
 public:
-	inline Exception(std::string_view errorType, std::string_view errorMessage) noexcept
+	Exception(std::string_view errorType, std::string_view errorMessage) noexcept
 		: m_exceptionType{ std::move(errorType) }, m_errorMessage{ std::move(errorMessage) } {}
 
 	[[nodiscard]]
-	inline const char* GetType() const noexcept { return std::data(m_exceptionType); }
+	const char* GetType() const noexcept { return std::data(m_exceptionType); }
 	[[nodiscard]]
-	inline const char* what() const noexcept override { return std::data(m_errorMessage); }
+	const char* what() const noexcept override { return std::data(m_errorMessage); }
 
 private:
 	std::string_view m_exceptionType;

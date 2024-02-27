@@ -69,7 +69,7 @@ public:
 	Buddy(const Buddy&) = delete;
 	Buddy& operator=(const Buddy&) = delete;
 
-	inline Buddy(Buddy&& other) noexcept
+	Buddy(Buddy&& other) noexcept
 		: AllocatorBase{ std::move(other) },
 		m_startingAddress{ other.m_startingAddress },
 		m_minimumBlockSize{other.m_minimumBlockSize},
@@ -78,7 +78,7 @@ public:
 		m_sixteenBitBlocks{ std::move(other.m_sixteenBitBlocks) },
 		m_eightBitBlocks{ std::move(other.m_eightBitBlocks) } {}
 
-	inline Buddy& operator=(Buddy&& other) noexcept
+	Buddy& operator=(Buddy&& other) noexcept
 	{
 		AllocatorBase::operator=(std::move(other));
 		m_startingAddress    = other.m_startingAddress;
