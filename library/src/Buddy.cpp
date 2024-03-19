@@ -249,9 +249,9 @@ void Buddy::Deallocate(size_t startingAddress, size_t size, size_t alignment) no
 Buddy::AllocInfo64 Buddy::GetOriginalBlockInfo(
 	size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
 ) const noexcept {
-	// Since I am keep all the available block info's startingAddres starting from 0.
-	// aligning the actual starting would offset the same amount. So, subtracting that
-	// should give us the 0 offset original BlockStartingAddress.
+	// Since I am keeping all the available block info's startingAddress starting from 0,
+	// aligning the actual starting address would offset the same amount for every block. So,
+	// subtracting that should give us the 0 offset original BlockStartingAddress.
 	// As for the original size, to allocate from a block it needs to fit the
 	// blockSize + the offset resulted from the alignment. And since it's a buddy allocator
 	// that means if the offset isn't zero, we will need the next higher order 2s exponent.
