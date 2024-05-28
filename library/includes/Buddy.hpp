@@ -119,12 +119,10 @@ private:
 		);
 
 		// If no larger element exists, add the new block at the end. Otherwise,
-		// the result would be either equal to larger than the size.
-		// So, we should insert the new element before it.
-		if (result == std::end(blocks))
-			blocks.emplace_back(MakeAllocInfo<T>(startingAddress, size));
-		else
-			blocks.insert(result, MakeAllocInfo<T>(startingAddress, size));
+		// the result would be larger than the size.
+		// So, we should insert the new element before it. Insert can take an end pointer
+		// so we don't need to use emplace_back.
+		blocks.insert(result, MakeAllocInfo<T>(startingAddress, size));
 	}
 
 	template<std::integral T>
@@ -147,7 +145,7 @@ private:
 			}
 		);
 
-		// If a result is found, it should the required size or more. So, we can allocate in it.
+		// If a result is found, it should be the required size or more. So, we can allocate in it.
 		if (result != std::end(blocks))
 		{
 			const AllocatorBase::AllocInfo<T>& info = *result;
