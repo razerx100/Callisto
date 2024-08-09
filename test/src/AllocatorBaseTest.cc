@@ -12,11 +12,6 @@ public:
         return AllocatorBase::BitsNeededFor(value);
     }
 
-    static size_t Align(size_t address, size_t alignment) noexcept
-    {
-        return AllocatorBase::Align(address, alignment);
-    }
-
     static size_t GetUpperBound2sExponent(size_t size) noexcept
     {
         return AllocatorBase::GetUpperBound2sExponent(size);
@@ -45,9 +40,9 @@ TEST(AllocatorBaseTest, BitsNeededForTest)
 
 TEST(AllocatorBaseTest, AlignTest)
 {
-    EXPECT_EQ(TestAllocatorBase::Align(18u, 16u), 32u) << "Aligned Address isn't 32.";
-    EXPECT_EQ(TestAllocatorBase::Align(0u, 16u), 0u) << "Aligned Address isn't 0.";
-    EXPECT_EQ(TestAllocatorBase::Align(64u, 16u), 64u) << "Aligned Address isn't 64.";
+    EXPECT_EQ(Align(18u, 16u), 32u) << "Aligned Address isn't 32.";
+    EXPECT_EQ(Align(0u, 16u), 0u) << "Aligned Address isn't 0.";
+    EXPECT_EQ(Align(64u, 16u), 64u) << "Aligned Address isn't 64.";
 }
 
 TEST(AllocatorBaseTest, UpperBound2sComponentTest)

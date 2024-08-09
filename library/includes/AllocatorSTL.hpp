@@ -48,17 +48,13 @@ public:
     }
 
     template<typename U>
-    friend bool operator==(
-        const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
-        ) noexcept
+    friend bool operator==(const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs) noexcept
     {
         return lhs.m_allocator == rhs.m_allocator;
     }
 
     template<typename U>
-    friend bool operator!=(
-        const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs
-        ) noexcept
+    friend bool operator!=(const AllocatorSTL<T>& lhs, const AllocatorSTL<U>& rhs) noexcept
     {
         return lhs.m_allocator != rhs.m_allocator;
     }

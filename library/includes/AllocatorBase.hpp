@@ -6,20 +6,33 @@
 #include <optional>
 #include <concepts>
 
-constexpr size_t operator"" _B(unsigned long long number) noexcept {
+constexpr size_t operator"" _B(unsigned long long number) noexcept
+{
 	return static_cast<size_t>(number);
 }
 
-constexpr size_t operator"" _KB(unsigned long long number) noexcept {
+constexpr size_t operator"" _KB(unsigned long long number) noexcept
+{
 	return static_cast<size_t>(number * 1024u);
 }
 
-constexpr size_t operator"" _MB(unsigned long long number) noexcept {
+constexpr size_t operator"" _MB(unsigned long long number) noexcept
+{
 	return static_cast<size_t>(number * 1024u * 1024u);
 }
 
-constexpr size_t operator"" _GB(unsigned long long number) noexcept {
+constexpr size_t operator"" _GB(unsigned long long number) noexcept
+{
 	return static_cast<size_t>(number * 1024u * 1024u * 1024u);
+}
+
+// Aligns the address to the alignment.
+// Ex: fn(address 18, alignment 16) = 32.
+template<std::integral T>
+[[nodiscard]]
+constexpr T Align(T address, T alignment) noexcept
+{
+	return (address + (alignment - 1u)) & ~(alignment - 1u);
 }
 
 class AllocatorBase
@@ -27,10 +40,12 @@ class AllocatorBase
 	friend class TestAllocatorBase;
 public:
 	AllocatorBase(size_t totalSize)
-		: m_defaultAlignment{ 0u }, m_totalSize{ totalSize }, m_availableSize{ totalSize } {}
+		: m_defaultAlignment{ 0u }, m_totalSize{ totalSize }, m_availableSize{ totalSize }
+	{}
 	AllocatorBase(size_t totalSize, size_t defaultAlignment)
 		: m_defaultAlignment{ defaultAlignment }, m_totalSize{ totalSize },
-		m_availableSize{ totalSize } {}
+		m_availableSize{ totalSize }
+	{}
 	virtual ~AllocatorBase() = default;
 
 	[[nodiscard]]
@@ -59,12 +74,16 @@ public:
 	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
 	// optional.
 	std::optional<size_t> AllocateN(size_t size) noexcept
-	{ return AllocateN(size, m_defaultAlignment); }
+	{
+		return AllocateN(size, m_defaultAlignment);
+	}
 
 	// Call the function with the alignment parameter if you had allocated using the allocate
 	// function with the alignment parameter.
 	void Deallocate(size_t startingAddress, size_t size) noexcept
-	{ Deallocate(startingAddress, size, m_defaultAlignment); }
+	{
+		Deallocate(startingAddress, size, m_defaultAlignment);
+	}
 
 private:
 	size_t m_defaultAlignment;
@@ -81,12 +100,15 @@ protected:
 		T size;
 
 		AllocInfo() = default;
-		AllocInfo(T startingAddress, T size) : startingAddress{ startingAddress }, size{ size } {}
+		AllocInfo(T startingAddress, T size) : startingAddress{ startingAddress }, size{ size }
+		{}
 
 		AllocInfo(const AllocInfo& other) noexcept
-			: startingAddress{ other.startingAddress }, size{ other.size } {}
+			: startingAddress{ other.startingAddress }, size{ other.size }
+		{}
 		AllocInfo(AllocInfo&& other) noexcept
-			: startingAddress{ other.startingAddress }, size{ other.size } {}
+			: startingAddress{ other.startingAddress }, size{ other.size }
+		{}
 
 		AllocInfo& operator=(const AllocInfo& other) noexcept
 		{
@@ -106,11 +128,13 @@ protected:
 		template<std::integral G>
 		AllocInfo(const AllocInfo<G>& other) noexcept
 			: startingAddress{ static_cast<T>(other.startingAddress) },
-			size{ static_cast<T>(other.size) } {}
+			size{ static_cast<T>(other.size) }
+		{}
 		template<std::integral G>
 		AllocInfo(AllocInfo<G>&& other) noexcept
 			: startingAddress{ static_cast<T>(other.startingAddress) },
-			size{ static_cast<T>(other.size) } {}
+			size{ static_cast<T>(other.size) }
+		{}
 
 		template<std::integral G>
 		AllocInfo& operator=(const AllocInfo<G>& other) noexcept
@@ -144,14 +168,6 @@ protected:
 protected:
 	[[nodiscard]]
 	static size_t BitsNeededFor(size_t value) noexcept;
-
-	// Aligns the address to the alignment.
-	// Ex: fn(address 18, alignment 16) = 32.
-	[[nodiscard]]
-	static size_t Align(size_t address, size_t alignment) noexcept
-	{
-		return (address + (alignment - 1u)) & ~(alignment - 1u);
-	}
 
 	// Gets the upperBound 2s Exponent.
 	// Ex: fn(48) = 64.

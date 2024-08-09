@@ -8,34 +8,43 @@
 class TestBuddy
 {
 public:
-	inline TestBuddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
-		: m_buddy{ startingAddress, totalSize, minimumBlockSize } {}
+	TestBuddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
+		: m_buddy{ startingAddress, totalSize, minimumBlockSize }
+	{}
 
 	// Wrappers for the functions from Buddy.
 	[[nodiscard]]
-	inline size_t TotalSize() const noexcept { return m_buddy.TotalSize(); }
+	size_t TotalSize() const noexcept { return m_buddy.TotalSize(); }
 	[[nodiscard]]
-	inline size_t AvailableSize() const noexcept { return m_buddy.AvailableSize(); }
+	size_t AvailableSize() const noexcept { return m_buddy.AvailableSize(); }
 	[[nodiscard]]
-	inline size_t MinimumBlockSize() const noexcept { return m_buddy.m_minimumBlockSize; }
+	size_t MinimumBlockSize() const noexcept { return m_buddy.m_minimumBlockSize; }
 
 	template<std::integral T>
 	using AllocInfo = Buddy::AllocInfo<T>;
 
 	[[nodiscard]]
-	inline const std::vector<AllocInfo<std::uint8_t>>& GetEightBitBlocks() const noexcept
-	{ return m_buddy.m_eightBitBlocks; }
+	const std::vector<AllocInfo<std::uint8_t>>& GetEightBitBlocks() const noexcept
+	{
+		return m_buddy.m_eightBitBlocks;
+	}
 	[[nodiscard]]
-	inline const std::vector<AllocInfo<std::uint16_t>>& GetSixteenBitBlocks() const noexcept
-	{ return m_buddy.m_sixteenBitBlocks; }
+	const std::vector<AllocInfo<std::uint16_t>>& GetSixteenBitBlocks() const noexcept
+	{
+		return m_buddy.m_sixteenBitBlocks;
+	}
 	[[nodiscard]]
-	inline const std::vector<AllocInfo<std::uint32_t>>& GetThirtyTwoBitBlocks() const noexcept
-	{ return m_buddy.m_thirtyTwoBitBlocks; }
+	const std::vector<AllocInfo<std::uint32_t>>& GetThirtyTwoBitBlocks() const noexcept
+	{
+		return m_buddy.m_thirtyTwoBitBlocks;
+	}
 	[[nodiscard]]
-	inline const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
-	{ return m_buddy.m_sixtyFourBitBlocks; }
+	const std::vector<AllocInfo<std::uint64_t>>& GetSixtyFourBitBlocks() const noexcept
+	{
+		return m_buddy.m_sixtyFourBitBlocks;
+	}
 	[[nodiscard]]
-	inline Buddy::AllocInfo64 GetOriginalBlockInfo(
+	Buddy::AllocInfo64 GetOriginalBlockInfo(
 		size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
 	) const noexcept {
 		return m_buddy.GetOriginalBlockInfo(
@@ -45,14 +54,20 @@ public:
 
 	[[nodiscard]]
 	std::optional<Buddy::AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept
-	{ return m_buddy.GetAllocInfo(size, alignment); }
+	{
+		return m_buddy.GetAllocInfo(size, alignment);
+	}
 
     [[nodiscard]]
-    inline std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept
-	{ return m_buddy.AllocateN(size, alignment); }
+    std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept
+	{
+		return m_buddy.AllocateN(size, alignment);
+	}
 
-	inline void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
-	{ m_buddy.Deallocate(startingAddress, size, alignment); }
+	void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept
+	{
+		m_buddy.Deallocate(startingAddress, size, alignment);
+	}
 
 public:
 	enum class BlocksType

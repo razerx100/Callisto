@@ -60,6 +60,10 @@ void Buddy::MakeNewAvailableBlock(size_t size) noexcept
 
 void Buddy::MakeInitialBlocks(size_t blockSize) noexcept
 {
+	// Make a block for the biggest 2s exponent which is less than or equal
+	// to blockSize. And keep doing the same with the leftover memory, while
+	// making new blocks on the left. So, the biggest block should be at the
+	// very right and the smallest one should be at the very left.
 	const size_t lowerBound2sExponent = GetLowerBound2sExponent(blockSize);
 	const size_t leftMemory	          = blockSize - lowerBound2sExponent;
 

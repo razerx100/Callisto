@@ -76,7 +76,8 @@ public:
 		m_sixtyFourBitBlocks{ std::move(other.m_sixtyFourBitBlocks) },
 		m_thirtyTwoBitBlocks{ std::move(other.m_thirtyTwoBitBlocks) },
 		m_sixteenBitBlocks{ std::move(other.m_sixteenBitBlocks) },
-		m_eightBitBlocks{ std::move(other.m_eightBitBlocks) } {}
+		m_eightBitBlocks{ std::move(other.m_eightBitBlocks) }
+	{}
 
 	Buddy& operator=(Buddy&& other) noexcept
 	{

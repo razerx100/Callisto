@@ -7,17 +7,21 @@ class Allocator
 {
 public:
     Allocator(size_t memoryStart, size_t memorySize, size_t minimumBlockSize) noexcept
-        : m_allocator{ memoryStart, memorySize, minimumBlockSize } {}
+        : m_allocator{ memoryStart, memorySize, minimumBlockSize }
+    {}
     Allocator(void* memoryStart, size_t memorySize, size_t minimumBlockSize) noexcept
-        : Allocator{ ToSizeT(memoryStart), memorySize, minimumBlockSize } {}
+        : Allocator{ ToSizeT(memoryStart), memorySize, minimumBlockSize }
+    {}
     Allocator(
         size_t memoryStart, size_t memorySize, size_t minimumBlockSize, size_t defaultAlignment
     ) noexcept
-        : m_allocator{ memoryStart, memorySize, minimumBlockSize, defaultAlignment } {}
+        : m_allocator{ memoryStart, memorySize, minimumBlockSize, defaultAlignment }
+    {}
     Allocator(
         void* memoryStart, size_t memorySize, size_t minimumBlockSize, size_t defaultAlignment
     ) noexcept
-        : Allocator{ ToSizeT(memoryStart), memorySize, minimumBlockSize, defaultAlignment } {}
+        : Allocator{ ToSizeT(memoryStart), memorySize, minimumBlockSize, defaultAlignment }
+    {}
 
     template<typename T = void>
     [[nodiscard]]
@@ -77,7 +81,8 @@ public:
     Allocator(const Allocator&) = delete;
     Allocator& operator=(const Allocator&) = delete;
 
-    Allocator(Allocator&& alloc) noexcept : m_allocator{ std::move(alloc.m_allocator) } {}
+    Allocator(Allocator&& alloc) noexcept : m_allocator{ std::move(alloc.m_allocator) }
+    {}
 
     Allocator& operator=(Allocator&& alloc) noexcept
     {

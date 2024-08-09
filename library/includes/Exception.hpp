@@ -3,10 +3,12 @@
 #include <exception>
 #include <string>
 
-class Exception : public std::exception {
+class Exception : public std::exception
+{
 public:
 	Exception(std::string_view errorType, std::string_view errorMessage) noexcept
-		: m_exceptionType{ std::move(errorType) }, m_errorMessage{ std::move(errorMessage) } {}
+		: m_exceptionType{ std::move(errorType) }, m_errorMessage{ std::move(errorMessage) }
+	{}
 
 	[[nodiscard]]
 	const char* GetType() const noexcept { return std::data(m_exceptionType); }
