@@ -32,7 +32,11 @@ template<std::integral T, std::integral G>
 [[nodiscard]]
 constexpr T Align(T address, G alignment) noexcept
 {
-	return (address + (alignment - 1u)) & ~(alignment - 1u);
+	// The address should always have the biggest size.
+	// So, casting to T should solve the size mismatching warnings.
+	const auto tAlignment = static_cast<T>(alignment);
+
+	return (address + (tAlignment - 1u)) & ~(tAlignment - 1u);
 }
 
 class AllocatorBase
