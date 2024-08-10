@@ -6,7 +6,7 @@
 class Exception : public std::exception
 {
 public:
-	Exception(std::string_view errorType, std::string_view errorMessage) noexcept
+	Exception(std::string_view errorType, std::string_view errorMessage)
 		: m_exceptionType{ std::move(errorType) }, m_errorMessage{ std::move(errorMessage) }
 	{}
 
