@@ -28,9 +28,9 @@ constexpr size_t operator"" _GB(unsigned long long number) noexcept
 
 // Aligns the address to the alignment.
 // Ex: fn(address 18, alignment 16) = 32.
-template<std::integral T>
+template<std::integral T, std::integral G>
 [[nodiscard]]
-constexpr T Align(T address, T alignment) noexcept
+constexpr T Align(T address, G alignment) noexcept
 {
 	return (address + (alignment - 1u)) & ~(alignment - 1u);
 }
