@@ -171,6 +171,9 @@ void Buddy::InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize)
 
 size_t Buddy::Allocate(size_t size, size_t alignment)
 {
+	if (!size)
+		throw Exception("AllocationError", "Size must be more than 0.");
+
 	auto allocationResult = GetAllocInfo(size, alignment);
 
 	if (allocationResult)
@@ -181,6 +184,9 @@ size_t Buddy::Allocate(size_t size, size_t alignment)
 
 std::optional<size_t> Buddy::AllocateN(size_t size, size_t alignment) noexcept
 {
+	if (!size)
+		return {};
+
 	auto allocationResult = GetAllocInfo(size, alignment);
 
 	if (allocationResult)
