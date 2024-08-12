@@ -1,5 +1,6 @@
 #include <Buddy.hpp>
 #include <Exception.hpp>
+#include <cassert>
 
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
 	: AllocatorBase{ totalSize }, m_startingAddress{ startingAddress },
@@ -171,8 +172,7 @@ void Buddy::InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize)
 
 size_t Buddy::Allocate(size_t size, size_t alignment)
 {
-	if (!size)
-		throw Exception("AllocationError", "Size must be more than 0.");
+	assert(size && "Can't allocate 0 bytes.");
 
 	auto allocationResult = GetAllocInfo(size, alignment);
 
@@ -184,8 +184,7 @@ size_t Buddy::Allocate(size_t size, size_t alignment)
 
 std::optional<size_t> Buddy::AllocateN(size_t size, size_t alignment) noexcept
 {
-	if (!size)
-		return {};
+	assert(size && "Can't allocate 0 bytes.");
 
 	auto allocationResult = GetAllocInfo(size, alignment);
 
