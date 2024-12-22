@@ -280,6 +280,14 @@ TEST(BuddyTest, BuddyAllocationTest)
 			testAllocationSize, testAlignment, testStartingAddress, 0u, 1u, 13u, 0u, __LINE__
 		);
 	}
+
+	{
+		size_t requiredSize = Buddy::GetMinimumRequiredNewAllocationSizeFor(100_MB);
+
+		TestBuddy buddy{ 0u, requiredSize, 16_KB };
+
+		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 1u) << "More than one block upon creation.";
+	}
 }
 
 TEST(BuddyTest, GetOriginalBlockTest)

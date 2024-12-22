@@ -61,6 +61,14 @@ public:
         m_allocator.Deallocate(ToSizeT(ptr), size);
     }
 
+	[[nodiscard]]
+	// If the given size isn't an exponent of 2, the biggest memory block will be the largest 2's
+	// exponent which is smaller than the size. So, this function should be used to query first
+	// the size of the largest block, so the allocation doesn't fail.
+    static size_t GetMinimumRequiredNewAllocationSizeFor(size_t size) noexcept
+    {
+        return Buddy::GetMinimumRequiredNewAllocationSizeFor(size);
+    }
 
     [[nodiscard]]
     size_t GetMemorySize() const noexcept { return m_allocator.TotalSize(); }

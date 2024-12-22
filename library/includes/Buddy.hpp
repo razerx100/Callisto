@@ -31,6 +31,12 @@ public:
 	using AllocatorBase::Allocate;
 	using AllocatorBase::AllocateN;
 
+	[[nodiscard]]
+	// If the given size isn't an exponent of 2, the biggest memory block will be the largest 2's
+	// exponent which is smaller than the size. So, this function should be used to query first
+	// the size of the largest block, so the allocation doesn't fail.
+	static size_t GetMinimumRequiredNewAllocationSizeFor(size_t size) noexcept;
+
 private:
 	void InitInitialAvailableBlocks(size_t startingAddress, size_t totalSize) noexcept;
 

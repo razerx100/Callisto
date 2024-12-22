@@ -59,6 +59,11 @@ void Buddy::MakeNewAvailableBlock(size_t size) noexcept
 		AddAllocBlock(m_sixtyFourBitBlocks, startingAddress, size);
 }
 
+size_t Buddy::GetMinimumRequiredNewAllocationSizeFor(size_t size) noexcept
+{
+	return GetUpperBound2sExponent(size);
+}
+
 void Buddy::MakeInitialBlocks(size_t blockSize) noexcept
 {
 	// Make a block for the biggest 2s exponent which is less than or equal
