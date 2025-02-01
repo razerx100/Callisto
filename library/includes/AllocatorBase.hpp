@@ -1,30 +1,10 @@
 #ifndef ALLOCATOR_BASE_HPP_
 #define ALLOCATOR_BASE_HPP_
-#include <cstdint>
 #include <array>
 #include <vector>
 #include <optional>
 #include <concepts>
-
-constexpr size_t operator"" _B(unsigned long long number) noexcept
-{
-	return static_cast<size_t>(number);
-}
-
-constexpr size_t operator"" _KB(unsigned long long number) noexcept
-{
-	return static_cast<size_t>(number * 1024u);
-}
-
-constexpr size_t operator"" _MB(unsigned long long number) noexcept
-{
-	return static_cast<size_t>(number * 1024u * 1024u);
-}
-
-constexpr size_t operator"" _GB(unsigned long long number) noexcept
-{
-	return static_cast<size_t>(number * 1024u * 1024u * 1024u);
-}
+#include <AllocationLiterals.hpp>
 
 // Aligns the address to the alignment.
 // Ex: fn(address 18, alignment 16) = 32.

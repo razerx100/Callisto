@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 file(GLOB_RECURSE SRC src/*.cpp includes/*.hpp)
 
-add_library(CallistoLib
+add_library(CallistoLib STATIC
     ${SRC}
 )
 
