@@ -88,6 +88,11 @@ public:
 
 	std::vector<T>::size_type size() const noexcept { return std::size(m_elements); }
 
+	T* data() { return std::data(m_elements); }
+	T const* data() const { return std::data(m_elements); }
+
+	bool empty() const { return std::empty(m_elements); }
+
 	[[nodiscard]]
 	const std::vector<T>& Get() const noexcept { return m_elements; }
 	[[nodiscard]]
