@@ -25,7 +25,7 @@ endif()
 FetchContent_MakeAvailable(googletest)
 
 if(MSVC)
-    target_compile_options(CallistoTest PRIVATE /fp:fast /MP /Ot /W4 /Gy)
+    target_compile_options(CallistoTest PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++20 /Zc:__cplusplus)
 endif()
 
 target_link_libraries(CallistoTest PRIVATE CallistoLib GTest::gtest_main)

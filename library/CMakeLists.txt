@@ -9,5 +9,5 @@ add_library(CallistoLib STATIC
 target_include_directories(CallistoLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includes/)
 
 if(MSVC)
-    target_compile_options(CallistoLib PRIVATE /fp:fast /MP /Ot /W4 /Gy)
+    target_compile_options(CallistoLib PRIVATE /fp:fast /MP /Ot /W4 /Gy /std:c++20 /Zc:__cplusplus)
 endif()
