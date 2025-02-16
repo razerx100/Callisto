@@ -23,8 +23,9 @@ public:
 
 	[[nodiscard]]
 	bool IsInUse(size_t index) const noexcept { return !m_availableIndices[index]; }
+
 	[[nodiscard]]
-	std::optional<size_t> GetFirstAvailableIndex() noexcept
+	std::optional<size_t> GetFirstAvailableIndex() const noexcept
 	{
 		auto result = std::ranges::find(m_availableIndices, true);
 
@@ -32,6 +33,40 @@ public:
 			return static_cast<size_t>(std::distance(std::begin(m_availableIndices), result));
 		else
 			return {};
+	}
+
+	[[nodiscard]]
+	std::optional<size_t> GetNextAvailableIndex(size_t currentIndex) const noexcept
+	{
+		const size_t indexCount = std::size(m_availableIndices);
+
+		for (size_t index = currentIndex + 1u; index < indexCount; ++index)
+			if (m_availableIndices[index])
+				return index;
+
+		return {};
+	}
+
+	// Only doing it for U32 since I don't like unnecessary allocations and if we decide to
+	// store the indices, it will be as U32.
+	[[nodiscard]]
+	std::vector<std::uint32_t> GetAllAvailableIndicesU32() const noexcept
+	{
+		std::vector<std::uint32_t> availableIndices{};
+
+		const size_t indexCount = std::size(m_availableIndices);
+
+		for (size_t index = 0u; index < indexCount; ++index)
+			if (m_availableIndices[index])
+				availableIndices[index] = static_cast<std::uint32_t>(index);
+
+		return availableIndices;
+	}
+
+	[[nodiscard]]
+	size_t GetFreeIndexCount() const noexcept
+	{
+		return std::ranges::count(m_availableIndices, true);
 	}
 
 private:
