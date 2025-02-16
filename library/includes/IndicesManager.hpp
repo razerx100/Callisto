@@ -58,7 +58,7 @@ public:
 
 		for (size_t index = 0u; index < indexCount; ++index)
 			if (m_availableIndices[index])
-				availableIndices[index] = static_cast<std::uint32_t>(index);
+				availableIndices.emplace_back(static_cast<std::uint32_t>(index));
 
 		return availableIndices;
 	}

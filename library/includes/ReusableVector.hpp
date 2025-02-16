@@ -20,6 +20,56 @@ public:
 	}
 
 	[[nodiscard]]
+	// If these many indices are free then return that or allocate that many.
+	std::vector<std::uint32_t> GetFreeIndicesU32(size_t requiredFreeIndexCount) noexcept
+	{
+		const size_t freeIndexCount = m_indicesManager.GetFreeIndexCount();
+
+		if (freeIndexCount < requiredFreeIndexCount)
+			ReserveNewElements(std::size(m_elements) + requiredFreeIndexCount - freeIndexCount);
+
+		return m_indicesManager.GetAllAvailableIndicesU32();
+	}
+
+	[[nodiscard]]
+	// To use this, T must have a copy ctor for the reserving.
+	std::vector<std::uint32_t> AddElementsU32(std::vector<T>&& elements)
+	{
+		std::vector<std::uint32_t> freeIndices = GetFreeIndicesU32(std::size(elements));
+
+		const size_t newElementCount           = std::size(freeIndices);
+
+		for (size_t index = 0u; index < newElementCount; ++index)
+		{
+			const size_t freeIndex = freeIndices[index];
+
+			m_elements[freeIndex]  = std::move(elements[index]);
+			m_indicesManager.ToggleAvailability(freeIndex, false);
+		}
+
+		return freeIndices;
+	}
+
+	[[nodiscard]]
+	// To use this, T must have a copy ctor for the reserving.
+	std::vector<std::uint32_t> AddElementsU32(const std::vector<T>& elements)
+	{
+		std::vector<std::uint32_t> freeIndices = GetFreeIndicesU32(std::size(elements));
+
+		const size_t newElementCount           = std::size(freeIndices);
+
+		for (size_t index = 0u; index < newElementCount; ++index)
+		{
+			const size_t freeIndex = freeIndices[index];
+
+			m_elements[freeIndex]  = elements[index];
+			m_indicesManager.ToggleAvailability(freeIndex, false);
+		}
+
+		return freeIndices;
+	}
+
+	[[nodiscard]]
 	size_t GetNextFreeIndex(size_t extraAllocCount = 0) noexcept
 	{
 		size_t elementIndex                 = std::numeric_limits<size_t>::max();
@@ -44,20 +94,14 @@ public:
 
 	template<typename U>
 	// To use this, T must have a copy ctor for the reserving.
-	size_t Add(U&& element, size_t extraAllocCount)
+	size_t Add(U&& element, size_t extraAllocCount = 0)
 	{
-		size_t elementIndex = GetNextFreeIndex(extraAllocCount);
+		size_t elementIndex      = GetNextFreeIndex(extraAllocCount);
 
-		m_elements[elementIndex] = std::move(element);
+		m_elements[elementIndex] = std::forward<U>(element);
 		m_indicesManager.ToggleAvailability(elementIndex, false);
 
 		return elementIndex;
-	}
-
-	template<typename U>
-	size_t Add(U&& element)
-	{
-		return Add(std::move(element), 0u);
 	}
 
 	void RemoveElement(size_t index) noexcept
@@ -103,6 +147,9 @@ public:
 	T* GetPtr() noexcept { return std::data(m_elements); }
 	[[nodiscard]]
 	size_t GetCount() const noexcept { return std::size(m_elements); }
+
+	[[nodiscard]]
+	const IndicesManager& GetIndicesManager() const noexcept { return m_indicesManager; }
 
 private:
 	std::vector<T> m_elements;
