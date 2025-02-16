@@ -69,6 +69,12 @@ public:
 		return std::ranges::count(m_availableIndices, true);
 	}
 
+	[[nodiscard]]
+	size_t GetActiveIndexCount() const noexcept
+	{
+		return std::ranges::count(m_availableIndices, false);
+	}
+
 private:
 	std::vector<bool> m_availableIndices;
 
