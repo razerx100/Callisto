@@ -75,6 +75,11 @@ public:
 		return std::ranges::count(m_availableIndices, false);
 	}
 
+	void erase(size_t index)
+	{
+		m_availableIndices.erase(std::next(std::begin(m_availableIndices), index));
+	}
+
 private:
 	std::vector<bool> m_availableIndices;
 

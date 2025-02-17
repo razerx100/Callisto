@@ -137,6 +137,12 @@ public:
 
 	bool empty() const { return std::empty(m_elements); }
 
+	void erase(size_t index)
+	{
+		m_elements.erase(std::next(std::begin(m_elements), index));
+		m_indicesManager.erase(index);
+	}
+
 	[[nodiscard]]
 	const std::vector<T>& Get() const noexcept { return m_elements; }
 	[[nodiscard]]
