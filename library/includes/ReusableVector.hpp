@@ -143,6 +143,26 @@ public:
 		m_indicesManager.erase(index);
 	}
 
+	void EraseInactiveElements() noexcept
+	{
+		size_t inactiveElementCount = m_indicesManager.GetFreeIndexCount();
+
+		// Removing in reverse should be more efficient.
+		size_t currentIndex         = std::size(m_elements) - 1u;
+
+		while (inactiveElementCount)
+		{
+			if (!m_indicesManager.IsInUse(currentIndex))
+			{
+				--inactiveElementCount;
+
+				erase(currentIndex);
+			}
+			else
+				--currentIndex;
+		}
+	}
+
 	[[nodiscard]]
 	const std::vector<T>& Get() const noexcept { return m_elements; }
 	[[nodiscard]]

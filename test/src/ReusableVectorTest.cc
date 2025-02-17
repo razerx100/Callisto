@@ -57,3 +57,60 @@ TEST(ReusableVectorTest, VectorTest)
 	EXPECT_EQ(itemIndices2[3], 5u) << "ItemIndices 2's Number 3 isn't 5.";
 	EXPECT_EQ(itemIndices2[4], 10u) << "ItemIndices 2's Number 4 isn't 10.";
 }
+
+TEST(ReusableVectorTest, EraseInactiveElementsTest0)
+{
+	ReusableVector<int> rVec{};
+
+	const size_t testIndex = rVec.Add(55);
+
+	int num1 = 66;
+
+	const size_t testIndex1 = rVec.Add(num1);
+
+	EXPECT_EQ(testIndex, 0) << "TestIndex isn't 0.";
+	EXPECT_EQ(testIndex1, 1) << "TestIndex1 isn't 1.";
+
+	std::vector<int> itemsToAdd{ 1, 2, 3, 4 };
+	std::vector<int> itemsToAdd1{ 5, 6, 7, 8 };
+
+	std::vector<std::uint32_t> itemIndices0 = rVec.AddElementsU32(itemsToAdd);
+
+	[[maybe_unused]] std::vector<std::uint32_t> itemIndices1 = rVec.AddElementsU32(std::move(itemsToAdd1));
+
+	rVec.RemoveElement(testIndex1);
+
+	for (std::uint32_t index : itemIndices0)
+		rVec.RemoveElement(index);
+
+	rVec.EraseInactiveElements();
+
+	EXPECT_EQ(std::size(rVec), 5u) << "RVec size is not 5.";
+	EXPECT_EQ(rVec[0], 55) << "RVec index 0 isn't 55.";
+	EXPECT_EQ(rVec[1], 5) << "RVec index 0 isn't 5.";
+	EXPECT_EQ(rVec[2], 6) << "RVec index 0 isn't 6.";
+	EXPECT_EQ(rVec[3], 7) << "RVec index 0 isn't 7.";
+	EXPECT_EQ(rVec[4], 8) << "RVec index 0 isn't 8.";
+}
+
+TEST(ReusableVectorTest, EraseInactiveElementsTest1)
+{
+	ReusableVector<int> rVec{};
+
+	rVec.EraseInactiveElements();
+
+	EXPECT_EQ(std::size(rVec), 0u) << "RVec size is not 0.";
+}
+
+TEST(ReusableVectorTest, EraseInactiveElementsTest2)
+{
+	ReusableVector<int> rVec{};
+
+	const size_t testIndex = rVec.Add(55);
+
+	rVec.RemoveElement(testIndex);
+
+	rVec.EraseInactiveElements();
+
+	EXPECT_EQ(std::size(rVec), 0u) << "RVec size is not 0.";
+}
