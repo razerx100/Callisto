@@ -9,7 +9,7 @@ template<typename T>
 class ReusableVector
 {
 public:
-	ReusableVector() = default;
+	ReusableVector() : m_elements{}, m_indicesManager{} {}
 	ReusableVector(size_t initialSize) : m_elements{ initialSize }, m_indicesManager{ initialSize }
 	{}
 
