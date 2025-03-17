@@ -9,7 +9,7 @@ class IndicesManager
 {
 public:
 	IndicesManager() : m_availableIndices{} {}
-	IndicesManager(size_t initialSize) : m_availableIndices(initialSize) {}
+	IndicesManager(size_t initialSize) : m_availableIndices(initialSize, true) {}
 
 	void ToggleAvailability(size_t index, bool on) noexcept
 	{

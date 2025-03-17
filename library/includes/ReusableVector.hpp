@@ -11,7 +11,7 @@ class ReusableContainer
 {
 public:
 	ReusableContainer() : m_elements{}, m_indicesManager{} {}
-	ReusableContainer(size_t initialSize) : m_elements{ initialSize }, m_indicesManager{ initialSize }
+	ReusableContainer(size_t initialSize) : m_elements(initialSize), m_indicesManager{ initialSize }
 	{}
 
 	void ReserveNewElements(size_t newCount) noexcept

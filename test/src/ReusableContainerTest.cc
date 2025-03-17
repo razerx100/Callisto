@@ -229,3 +229,10 @@ TEST(ReusableContainerTest, DequeEraseInactiveElementsTest2)
 
 	EXPECT_EQ(std::size(rDeque), 0u) << "RDeque size is not 0.";
 }
+
+TEST(ReusableContainerTest, VecDefaultInitTest)
+{
+	ReusableVector<int> rVec{ 10u };
+
+	EXPECT_EQ(rVec.GetIndicesManager().GetFreeIndexCount(), 10u) << "Doesn't have 10 free indices.";
+}
