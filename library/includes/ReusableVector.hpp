@@ -14,10 +14,15 @@ public:
 	ReusableContainer(size_t initialSize) : m_elements(initialSize), m_indicesManager{ initialSize }
 	{}
 
-	void ReserveNewElements(size_t newCount) noexcept
+	void Resize(size_t newTotalCount) noexcept
 	{
-		m_elements.resize(newCount);
-		m_indicesManager.Resize(newCount);
+		m_elements.resize(newTotalCount);
+		m_indicesManager.Resize(newTotalCount);
+	}
+
+	void Extend(size_t elementsToAdd) noexcept
+	{
+		Resize(size() + elementsToAdd);
 	}
 
 	[[nodiscard]]
@@ -27,7 +32,7 @@ public:
 		const size_t freeIndexCount = m_indicesManager.GetFreeIndexCount();
 
 		if (freeIndexCount < requiredFreeIndexCount)
-			ReserveNewElements(std::size(m_elements) + requiredFreeIndexCount - freeIndexCount);
+			Resize(size() + requiredFreeIndexCount - freeIndexCount);
 
 		return m_indicesManager.GetAllAvailableIndicesU32();
 	}
@@ -87,7 +92,7 @@ public:
 			// ElementIndex is the previous size, we have the new item, and then the extraAllocations.
 			const size_t newElementCount = elementIndex + 1u + extraAllocCount;
 
-			ReserveNewElements(newElementCount);
+			Resize(newElementCount);
 		}
 
 		return elementIndex;
