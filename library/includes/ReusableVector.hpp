@@ -1,16 +1,17 @@
 #ifndef REUSABLE_VECTOR_HPP_
 #define REUSABLE_VECTOR_HPP_
 #include <vector>
+#include <deque>
 #include <type_traits>
 #include <utility>
 #include <IndicesManager.hpp>
 
-template<typename T>
-class ReusableVector
+template<typename T, typename Container_t>
+class ReusableContainer
 {
 public:
-	ReusableVector() : m_elements{}, m_indicesManager{} {}
-	ReusableVector(size_t initialSize) : m_elements{ initialSize }, m_indicesManager{ initialSize }
+	ReusableContainer() : m_elements{}, m_indicesManager{} {}
+	ReusableContainer(size_t initialSize) : m_elements{ initialSize }, m_indicesManager{ initialSize }
 	{}
 
 	void ReserveNewElements(size_t newCount) noexcept
@@ -124,13 +125,15 @@ public:
 	T& operator[](size_t index) noexcept { return m_elements[index]; }
 	const T& operator[](size_t index) const noexcept { return m_elements[index]; }
 
-	std::vector<T>::iterator begin() { return std::begin(m_elements); }
-	std::vector<T>::const_iterator begin() const { return std::begin(m_elements); }
+	// Don't sort, as that will mess up the indices. If I need to do sorting in the future
+	// will have to add custom iterators
+	Container_t::iterator begin() { return std::begin(m_elements); }
+	Container_t::const_iterator begin() const { return std::begin(m_elements); }
 
-	std::vector<T>::iterator end() { return std::end(m_elements); }
-	std::vector<T>::const_iterator end() const { return std::end(m_elements); }
+	Container_t::iterator end() { return std::end(m_elements); }
+	Container_t::const_iterator end() const { return std::end(m_elements); }
 
-	std::vector<T>::size_type size() const noexcept { return std::size(m_elements); }
+	Container_t::size_type size() const noexcept { return std::size(m_elements); }
 
 	T* data() { return std::data(m_elements); }
 	T const* data() const { return std::data(m_elements); }
@@ -164,9 +167,9 @@ public:
 	}
 
 	[[nodiscard]]
-	const std::vector<T>& Get() const noexcept { return m_elements; }
+	const Container_t& Get() const noexcept { return m_elements; }
 	[[nodiscard]]
-	std::vector<T>& Get() noexcept { return m_elements; }
+	Container_t& Get() noexcept { return m_elements; }
 	[[nodiscard]]
 	T const* GetPtr() const noexcept { return std::data(m_elements); }
 	[[nodiscard]]
@@ -178,25 +181,25 @@ public:
 	const IndicesManager& GetIndicesManager() const noexcept { return m_indicesManager; }
 
 private:
-	std::vector<T> m_elements;
+	Container_t    m_elements;
 	IndicesManager m_indicesManager;
 
 public:
-	ReusableVector(const ReusableVector& other) noexcept
+	ReusableContainer(const ReusableContainer& other) noexcept
 		: m_elements{ other.m_elements }, m_indicesManager{ other.m_indicesManager }
 	{}
-	ReusableVector& operator=(const ReusableVector& other) noexcept
+	ReusableContainer& operator=(const ReusableContainer& other) noexcept
 	{
 		m_elements       = other.m_elements;
 		m_indicesManager = other.m_indicesManager;
 
 		return *this;
 	}
-	ReusableVector(ReusableVector&& other) noexcept
+	ReusableContainer(ReusableContainer&& other) noexcept
 		: m_elements{ std::move(other.m_elements) },
 		m_indicesManager{ std::move(other.m_indicesManager) }
 	{}
-	ReusableVector& operator=(ReusableVector&& other) noexcept
+	ReusableContainer& operator=(ReusableContainer&& other) noexcept
 	{
 		m_elements       = std::move(other.m_elements);
 		m_indicesManager = std::move(other.m_indicesManager);
@@ -204,4 +207,10 @@ public:
 		return *this;
 	}
 };
+
+template<typename T>
+using ReusableVector = ReusableContainer<T, std::vector<T>>;
+
+template<typename T>
+using ReusableDeque = ReusableContainer<T, std::deque<T>>;
 #endif
