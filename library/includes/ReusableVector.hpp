@@ -33,7 +33,7 @@ public:
 	}
 
 	[[nodiscard]]
-	// To use this, T must have a copy ctor for the reserving.
+	// To use this, T must have a copy and a default ctor for the reserving.
 	std::vector<std::uint32_t> AddElementsU32(std::vector<T>&& elements)
 	{
 		std::vector<std::uint32_t> freeIndices = GetFreeIndicesU32(std::size(elements));
@@ -52,7 +52,7 @@ public:
 	}
 
 	[[nodiscard]]
-	// To use this, T must have a copy ctor for the reserving.
+	// To use this, T must have a copy and a default ctor for the reserving.
 	std::vector<std::uint32_t> AddElementsU32(const std::vector<T>& elements)
 	{
 		std::vector<std::uint32_t> freeIndices = GetFreeIndicesU32(std::size(elements));
@@ -94,7 +94,7 @@ public:
 	}
 
 	template<typename U>
-	// To use this, T must have a copy ctor for the reserving.
+	// To use this, T must have a copy and a default ctor for the reserving.
 	size_t Add(U&& element, size_t extraAllocCount = 0)
 	{
 		size_t elementIndex      = GetNextFreeIndex(extraAllocCount);
