@@ -80,6 +80,8 @@ public:
 		m_availableIndices.erase(std::next(std::begin(m_availableIndices), index));
 	}
 
+	std::vector<bool>::size_type size() const noexcept { return std::size(m_availableIndices); }
+
 private:
 	std::vector<bool> m_availableIndices;
 
