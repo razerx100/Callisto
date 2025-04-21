@@ -30,49 +30,14 @@ public:
 		: m_defaultAlignment{ defaultAlignment }, m_totalSize{ totalSize },
 		m_availableSize{ totalSize }
 	{}
-	virtual ~AllocatorBase() = default;
 
 	[[nodiscard]]
 	size_t TotalSize() const noexcept { return m_totalSize; }
 	[[nodiscard]]
 	size_t AvailableSize() const noexcept { return m_availableSize; }
 
-    [[nodiscard]]
-	// Returns an aligned offset where the requested amount of size can be allocated or throws an
-	// exception.
-    virtual size_t Allocate(size_t size, size_t alignment) = 0;
-    [[nodiscard]]
-	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
-	// optional.
-    virtual std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept = 0;
-
-	// Call the function with the alignment parameter if you had allocated using the allocate
-	// function with the alignment parameter.
-	virtual void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept = 0;
-
-	[[nodiscard]]
-	// Returns an aligned offset where the requested amount of size can be allocated or throws an
-	// exception.
-	size_t Allocate(size_t size) { return Allocate(size, m_defaultAlignment); }
-	[[nodiscard]]
-	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
-	// optional.
-	std::optional<size_t> AllocateN(size_t size) noexcept
-	{
-		return AllocateN(size, m_defaultAlignment);
-	}
-
-	// Call the function with the alignment parameter if you had allocated using the allocate
-	// function with the alignment parameter.
-	void Deallocate(size_t startingAddress, size_t size) noexcept
-	{
-		Deallocate(startingAddress, size, m_defaultAlignment);
-	}
-
-private:
-	size_t m_defaultAlignment;
-
 protected:
+	size_t m_defaultAlignment;
 	size_t m_totalSize;
 	size_t m_availableSize;
 

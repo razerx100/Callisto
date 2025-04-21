@@ -14,27 +14,41 @@ public:
 		size_t startingAddress, size_t totalSize, size_t defaultAlignment, size_t minimumBlockSize
 	);
 
-    [[nodiscard]]
 	// Returns an aligned offset where the requested amount of size can be allocated or throws an
 	// exception.
-    size_t Allocate(size_t size, size_t alignment) override;
-    [[nodiscard]]
+	[[nodiscard]]
+	size_t Allocate(size_t size, size_t alignment);
 	// Returns either an aligned offset where the requested amount of size can be allocated or an empty
 	// optional.
-    std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept override;
-
-	void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept override;
-
-	// Apparently the functions without the alignment argument get hidden for some reason when you
-	// override. So need to define these again here.
-	using AllocatorBase::Deallocate;
-	using AllocatorBase::Allocate;
-	using AllocatorBase::AllocateN;
-
 	[[nodiscard]]
+	std::optional<size_t> AllocateN(size_t size, size_t alignment) noexcept;
+
+	void Deallocate(size_t startingAddress, size_t size, size_t alignment) noexcept;
+
+	// Returns an aligned offset where the requested amount of size can be allocated or throws an
+	// exception.
+	[[nodiscard]]
+	size_t Allocate(size_t size) { return Allocate(size, m_defaultAlignment); }
+
+	// Returns either an aligned offset where the requested amount of size can be allocated or an
+	// empty optional.
+	[[nodiscard]]
+	std::optional<size_t> AllocateN(size_t size) noexcept
+	{
+		return AllocateN(size, m_defaultAlignment);
+	}
+
+	// Call the function with the alignment parameter if you had allocated using the allocate
+	// function with the alignment parameter.
+	void Deallocate(size_t startingAddress, size_t size) noexcept
+	{
+		Deallocate(startingAddress, size, m_defaultAlignment);
+	}
+
 	// If the given size isn't an exponent of 2, the biggest memory block will be the largest 2's
 	// exponent which is smaller than the size. So, this function should be used to query first
 	// the size of the largest block, so the allocation doesn't fail.
+	[[nodiscard]]
 	static size_t GetMinimumRequiredNewAllocationSizeFor(size_t size) noexcept;
 
 private:
@@ -52,8 +66,8 @@ private:
 	std::optional<AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept;
 	[[nodiscard]]
 	AllocInfo64 AllocateOnBlock(
-		size_t blockStartingAddress, size_t blockSize, size_t allocationSize, size_t allocationAlignment,
-		size_t alignedSize
+		size_t blockStartingAddress, size_t blockSize, size_t allocationSize,
+		size_t allocationAlignment, size_t alignedSize
 	) noexcept;
 	[[nodiscard]]
 	AllocInfo64 GetOriginalBlockInfo(
