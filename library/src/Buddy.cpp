@@ -1,5 +1,5 @@
 #include <Buddy.hpp>
-#include <Exception.hpp>
+#include <CallistoException.hpp>
 #include <cassert>
 
 namespace Callisto
