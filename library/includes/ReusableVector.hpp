@@ -6,6 +6,8 @@
 #include <utility>
 #include <IndicesManager.hpp>
 
+namespace Callisto
+{
 template<typename T, typename Container_t>
 class ReusableContainer
 {
@@ -218,4 +220,5 @@ using ReusableVector = ReusableContainer<T, std::vector<T>>;
 
 template<typename T>
 using ReusableDeque = ReusableContainer<T, std::deque<T>>;
+}
 #endif

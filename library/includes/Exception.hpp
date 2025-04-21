@@ -3,6 +3,8 @@
 #include <exception>
 #include <string>
 
+namespace Callisto
+{
 class Exception : public std::exception
 {
 public:
@@ -19,4 +21,5 @@ private:
 	std::string_view m_exceptionType;
 	std::string_view m_errorMessage;
 };
+}
 #endif

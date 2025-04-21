@@ -4,9 +4,13 @@
 #include <vector>
 #include <optional>
 
+class SharedBufferAllocatorTest;
+
+namespace Callisto
+{
 class SharedBufferAllocator
 {
-	friend class SharedBufferAllocatorTest;
+	friend ::SharedBufferAllocatorTest;
 
 public:
 	struct AllocInfo
@@ -57,4 +61,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

@@ -4,9 +4,13 @@
 #include <ranges>
 #include <algorithm>
 
+class TestBuddy;
+
+namespace Callisto
+{
 class Buddy : public AllocatorBase
 {
-	friend class TestBuddy;
+	friend ::TestBuddy;
 public:
 
 	Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize);
@@ -186,4 +190,5 @@ private:
 			return {};
 	}
 };
+}
 #endif

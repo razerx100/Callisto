@@ -4,7 +4,7 @@
 
 TEST(ReusableContainerTest, VectorTest)
 {
-	ReusableVector<int> rVec{};
+	Callisto::ReusableVector<int> rVec{};
 
 	const size_t testIndex = rVec.Add(55);
 
@@ -60,7 +60,7 @@ TEST(ReusableContainerTest, VectorTest)
 
 TEST(ReusableContainerTest, DequeTest)
 {
-	ReusableDeque<int> rDeque{};
+	Callisto::ReusableDeque<int> rDeque{};
 
 	const size_t testIndex = rDeque.Add(55);
 
@@ -116,7 +116,7 @@ TEST(ReusableContainerTest, DequeTest)
 
 TEST(ReusableContainerTest, VectorEraseInactiveElementsTest0)
 {
-	ReusableVector<int> rVec{};
+	Callisto::ReusableVector<int> rVec{};
 
 	const size_t testIndex = rVec.Add(55);
 
@@ -132,7 +132,8 @@ TEST(ReusableContainerTest, VectorEraseInactiveElementsTest0)
 
 	std::vector<std::uint32_t> itemIndices0 = rVec.AddElementsU32(itemsToAdd);
 
-	[[maybe_unused]] std::vector<std::uint32_t> itemIndices1 = rVec.AddElementsU32(std::move(itemsToAdd1));
+	[[maybe_unused]] std::vector<std::uint32_t> itemIndices1
+		= rVec.AddElementsU32(std::move(itemsToAdd1));
 
 	rVec.RemoveElement(testIndex1);
 
@@ -151,7 +152,7 @@ TEST(ReusableContainerTest, VectorEraseInactiveElementsTest0)
 
 TEST(ReusableContainerTest, DequeEraseInactiveElementsTest0)
 {
-	ReusableDeque<int> rDeque{};
+	Callisto::ReusableDeque<int> rDeque{};
 
 	const size_t testIndex = rDeque.Add(55);
 
@@ -188,7 +189,7 @@ TEST(ReusableContainerTest, DequeEraseInactiveElementsTest0)
 
 TEST(ReusableContainerTest, VectorEraseInactiveElementsTest1)
 {
-	ReusableVector<int> rVec{};
+	Callisto::ReusableVector<int> rVec{};
 
 	rVec.EraseInactiveElements();
 
@@ -197,7 +198,7 @@ TEST(ReusableContainerTest, VectorEraseInactiveElementsTest1)
 
 TEST(ReusableContainerTest, DequeEraseInactiveElementsTest1)
 {
-	ReusableDeque<int> rDeque{};
+	Callisto::ReusableDeque<int> rDeque{};
 
 	rDeque.EraseInactiveElements();
 
@@ -206,7 +207,7 @@ TEST(ReusableContainerTest, DequeEraseInactiveElementsTest1)
 
 TEST(ReusableContainerTest, VectorEraseInactiveElementsTest2)
 {
-	ReusableVector<int> rVec{};
+	Callisto::ReusableVector<int> rVec{};
 
 	const size_t testIndex = rVec.Add(55);
 
@@ -219,7 +220,7 @@ TEST(ReusableContainerTest, VectorEraseInactiveElementsTest2)
 
 TEST(ReusableContainerTest, DequeEraseInactiveElementsTest2)
 {
-	ReusableDeque<int> rDeque{};
+	Callisto::ReusableDeque<int> rDeque{};
 
 	const size_t testIndex = rDeque.Add(55);
 
@@ -232,7 +233,8 @@ TEST(ReusableContainerTest, DequeEraseInactiveElementsTest2)
 
 TEST(ReusableContainerTest, VecDefaultInitTest)
 {
-	ReusableVector<int> rVec{ 10u };
+	Callisto::ReusableVector<int> rVec{ 10u };
 
-	EXPECT_EQ(rVec.GetIndicesManager().GetFreeIndexCount(), 10u) << "Doesn't have 10 free indices.";
+	EXPECT_EQ(rVec.GetIndicesManager().GetFreeIndexCount(), 10u)
+		<< "Doesn't have 10 free indices.";
 }

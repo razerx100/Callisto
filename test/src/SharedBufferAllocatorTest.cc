@@ -7,19 +7,19 @@ class SharedBufferAllocatorTest
 {
 public:
 	[[nodiscard]]
-	static const std::vector<SharedBufferAllocator::AllocInfo>& GetAvailableMemory(
-		const SharedBufferAllocator& allocator
+	static const std::vector<Callisto::SharedBufferAllocator::AllocInfo>& GetAvailableMemory(
+		const Callisto::SharedBufferAllocator& allocator
 	) noexcept {
 		return allocator.m_availableMemory;
 	}
 };
 
-SharedBufferAllocator::AllocInfo GetAllocation(
-	SharedBufferAllocator& allocator, size_t& bufferSize,
+Callisto::SharedBufferAllocator::AllocInfo GetAllocation(
+	Callisto::SharedBufferAllocator& allocator, size_t& bufferSize,
 	size_t requestedSize
 ) noexcept {
 	auto availableAllocIndex = allocator.GetAvailableAllocInfo(requestedSize);
-	SharedBufferAllocator::AllocInfo allocInfo{ .offset = 0u, .size = 0u };
+	Callisto::SharedBufferAllocator::AllocInfo allocInfo{ .offset = 0u, .size = 0u };
 
 	if (!availableAllocIndex)
 	{
@@ -31,7 +31,7 @@ SharedBufferAllocator::AllocInfo GetAllocation(
 	else
 		allocInfo = allocator.GetAndRemoveAllocInfo(*availableAllocIndex);
 
-	return SharedBufferAllocator::AllocInfo
+	return Callisto::SharedBufferAllocator::AllocInfo
 	{
 		.offset = allocator.AllocateMemory(allocInfo, requestedSize),
 		.size   = requestedSize
@@ -40,7 +40,7 @@ SharedBufferAllocator::AllocInfo GetAllocation(
 
 TEST(SharedBufferAllocatorTest, AllocationTest)
 {
-	SharedBufferAllocator allocator{};
+	Callisto::SharedBufferAllocator allocator{};
 
 	size_t bufferSize = 0u;
 
@@ -62,7 +62,7 @@ TEST(SharedBufferAllocatorTest, AllocationTest)
 
 TEST(SharedBufferAllocatorTest, ReallocationTest)
 {
-	SharedBufferAllocator allocator{};
+	Callisto::SharedBufferAllocator allocator{};
 
 	size_t bufferSize = 0u;
 

@@ -1,5 +1,7 @@
 #include <AllocatorBase.hpp>
 
+namespace Callisto
+{
 size_t AllocatorBase::BitsNeededFor(size_t value) noexcept
 {
 	constexpr size_t maxBits        = sizeof(size_t) * 8u;
@@ -14,4 +16,5 @@ size_t AllocatorBase::BitsNeededFor(size_t value) noexcept
 	}
 
 	return 0u;
+}
 }

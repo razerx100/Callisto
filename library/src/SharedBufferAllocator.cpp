@@ -2,6 +2,8 @@
 #include <ranges>
 #include <algorithm>
 
+namespace Callisto
+{
 void SharedBufferAllocator::AddAllocInfo(size_t offset, size_t size) noexcept
 {
 	// To find the possible previous alloc info, that allocation's offset + size should be
@@ -92,4 +94,5 @@ size_t SharedBufferAllocator::AllocateMemory(const AllocInfo& allocInfo, size_t 
 		AddAllocInfo(offset + size, freeMemory);
 
 	return offset;
+}
 }

@@ -6,6 +6,10 @@
 #include <concepts>
 #include <AllocationLiterals.hpp>
 
+class TestAllocatorBase;
+
+namespace Callisto
+{
 // Aligns the address to the alignment.
 // Ex: fn(address 18, alignment 16) = 32.
 template<std::integral T, std::integral G>
@@ -21,7 +25,7 @@ constexpr T Align(T address, G alignment) noexcept
 
 class AllocatorBase
 {
-	friend class TestAllocatorBase;
+	friend ::TestAllocatorBase;
 public:
 	AllocatorBase(size_t totalSize)
 		: m_defaultAlignment{ 0u }, m_totalSize{ totalSize }, m_availableSize{ totalSize }
@@ -165,4 +169,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

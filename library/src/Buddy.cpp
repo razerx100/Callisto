@@ -2,6 +2,8 @@
 #include <Exception.hpp>
 #include <cassert>
 
+namespace Callisto
+{
 Buddy::Buddy(size_t startingAddress, size_t totalSize, size_t minimumBlockSize)
 	: AllocatorBase{ totalSize }, m_startingAddress{ startingAddress },
 	m_minimumBlockSize{ minimumBlockSize }, m_sixtyFourBitBlocks{}, m_thirtyTwoBitBlocks{},
@@ -332,4 +334,5 @@ void Buddy::MergeBuddies(const AllocInfo64& buddy)
 
 	// Now make a new available block with the latest information.
 	MakeNewAvailableBlock(originalBuddyAddress, blockSize);
+}
 }

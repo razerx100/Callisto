@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <new>
 
+namespace Callisto
+{
 template<typename T>
 class AllocatorSTL
 {
@@ -87,4 +89,5 @@ public:
 private:
     Allocator& m_allocator;
 };
+}
 #endif

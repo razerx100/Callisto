@@ -5,6 +5,8 @@
 #include <vector>
 #include <optional>
 
+namespace Callisto
+{
 class IndicesManager
 {
 public:
@@ -105,4 +107,5 @@ public:
 		return *this;
 	}
 };
+}
 #endif

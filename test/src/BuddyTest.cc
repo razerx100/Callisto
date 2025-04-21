@@ -21,7 +21,7 @@ public:
 	size_t MinimumBlockSize() const noexcept { return m_buddy.m_minimumBlockSize; }
 
 	template<std::integral T>
-	using AllocInfo = Buddy::AllocInfo<T>;
+	using AllocInfo = Callisto::Buddy::AllocInfo<T>;
 
 	[[nodiscard]]
 	const std::vector<AllocInfo<std::uint8_t>>& GetEightBitBlocks() const noexcept
@@ -44,7 +44,7 @@ public:
 		return m_buddy.m_sixtyFourBitBlocks;
 	}
 	[[nodiscard]]
-	Buddy::AllocInfo64 GetOriginalBlockInfo(
+	Callisto::Buddy::AllocInfo64 GetOriginalBlockInfo(
 		size_t allocationStartingAddress, size_t allocationSize, size_t allocationAlignment
 	) const noexcept {
 		return m_buddy.GetOriginalBlockInfo(
@@ -53,8 +53,9 @@ public:
 	}
 
 	[[nodiscard]]
-	std::optional<Buddy::AllocInfo64> GetAllocInfo(size_t size, size_t alignment) noexcept
-	{
+	std::optional<Callisto::Buddy::AllocInfo64> GetAllocInfo(
+		size_t size, size_t alignment
+	) noexcept {
 		return m_buddy.GetAllocInfo(size, alignment);
 	}
 
@@ -81,7 +82,8 @@ public:
 public:
 	// Test functions.
 	void SizeTest(
-		size_t availableSize, size_t totalSize, size_t minimumBlockSize, std::uint_least32_t lineNumber
+		size_t availableSize, size_t totalSize, size_t minimumBlockSize,
+		std::uint_least32_t lineNumber
 	) const;
 	void BlocksCountTest(
 		size_t eightBitsCount, size_t sixteenBitsCount, size_t thirtyTwoBitsCount,
@@ -90,24 +92,26 @@ public:
 
 	template<std::integral T>
 	static void AllocInfoTest(
-		const Buddy::AllocInfo<T>& allocInfo, size_t startingAddress, size_t blockSize,
+		const Callisto::Buddy::AllocInfo<T>& allocInfo, size_t startingAddress, size_t blockSize,
 		std::uint_least32_t lineNumber
 	) {
 		EXPECT_EQ(allocInfo.startingAddress, startingAddress)
-			<< std::format("Starting Address isn't {} on the line {}.", startingAddress, lineNumber);
+			<< std::format(
+				"Starting Address isn't {} on the line {}.", startingAddress, lineNumber
+				);
 		EXPECT_EQ(allocInfo.size, blockSize)
 			<< std::format("Size isn't {} on the line {}", blockSize, lineNumber);
 	}
 
 	template<std::integral T>
 	static void SpecificBlockTest(
-		const std::vector<Buddy::AllocInfo<T>>& blocks, size_t index, size_t startingAddress,
-		size_t blockSize, std::uint_least32_t lineNumber
+		const std::vector<Callisto::Buddy::AllocInfo<T>>& blocks, size_t index,
+		size_t startingAddress, size_t blockSize, std::uint_least32_t lineNumber
 	) {
 		EXPECT_LT(index, std::size(blocks))
 			<< std::format("Index of the Blocks array doesn't exist on the line {}.", lineNumber);
 
-		const Buddy::AllocInfo<T>& allocInfo = blocks.at(index);
+		const Callisto::Buddy::AllocInfo<T>& allocInfo = blocks.at(index);
 
 		AllocInfoTest(allocInfo, startingAddress, blockSize, lineNumber);
 	}
@@ -122,7 +126,7 @@ public:
 	);
 
 private:
-	Buddy m_buddy;
+	Callisto::Buddy m_buddy;
 };
 
 void TestBuddy::SizeTest(
@@ -151,11 +155,13 @@ void TestBuddy::BlocksCountTest(
 		);
 	EXPECT_EQ(std::size(GetThirtyTwoBitBlocks()), thirtyTwoBitsCount)
 		<< std::format(
-			"There should be {} ThirtyTwoBitsBlocks on the line {}.", thirtyTwoBitsCount, lineNumber
+			"There should be {} ThirtyTwoBitsBlocks on the line {}.", thirtyTwoBitsCount,
+			lineNumber
 		);
 	EXPECT_EQ(std::size(GetSixtyFourBitBlocks()), sixtyFourBitsCount)
 		<< std::format(
-			"There should be {} SixtyFourBitsBlocks on the line {}.", sixtyFourBitsCount, lineNumber
+			"There should be {} SixtyFourBitsBlocks on the line {}.", sixtyFourBitsCount,
+			lineNumber
 		);
 }
 
@@ -282,11 +288,12 @@ TEST(BuddyTest, BuddyAllocationTest)
 	}
 
 	{
-		size_t requiredSize = Buddy::GetMinimumRequiredNewAllocationSizeFor(100_MB);
+		size_t requiredSize = Callisto::Buddy::GetMinimumRequiredNewAllocationSizeFor(100_MB);
 
 		TestBuddy buddy{ 0u, requiredSize, 16_KB };
 
-		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 1u) << "More than one block upon creation.";
+		EXPECT_EQ(std::size(buddy.GetThirtyTwoBitBlocks()), 1u)
+			<< "More than one block upon creation.";
 	}
 }
 

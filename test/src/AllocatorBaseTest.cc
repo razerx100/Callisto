@@ -9,22 +9,22 @@ public:
 	[[nodiscard]]
     static size_t BitsNeededFor(size_t value) noexcept
     {
-        return AllocatorBase::BitsNeededFor(value);
+        return Callisto::AllocatorBase::BitsNeededFor(value);
     }
 
     static size_t GetUpperBound2sExponent(size_t size) noexcept
     {
-        return AllocatorBase::GetUpperBound2sExponent(size);
+        return Callisto::AllocatorBase::GetUpperBound2sExponent(size);
     }
 
     static size_t GetLowerBound2sExponent(size_t size) noexcept
     {
-        return AllocatorBase::GetLowerBound2sExponent(size);
+        return Callisto::AllocatorBase::GetLowerBound2sExponent(size);
     }
 
     static size_t GetAlignedSize(size_t startingAddress, size_t alignment, size_t size) noexcept
     {
-        return AllocatorBase::GetAlignedSize(startingAddress, alignment, size);
+        return Callisto::AllocatorBase::GetAlignedSize(startingAddress, alignment, size);
     }
 };
 
@@ -40,9 +40,9 @@ TEST(AllocatorBaseTest, BitsNeededForTest)
 
 TEST(AllocatorBaseTest, AlignTest)
 {
-    EXPECT_EQ(Align(18u, 16u), 32u) << "Aligned Address isn't 32.";
-    EXPECT_EQ(Align(0u, 16u), 0u) << "Aligned Address isn't 0.";
-    EXPECT_EQ(Align(64u, 16u), 64u) << "Aligned Address isn't 64.";
+    EXPECT_EQ(Callisto::Align(18u, 16u), 32u) << "Aligned Address isn't 32.";
+    EXPECT_EQ(Callisto::Align(0u, 16u), 0u) << "Aligned Address isn't 0.";
+    EXPECT_EQ(Callisto::Align(64u, 16u), 64u) << "Aligned Address isn't 64.";
 }
 
 TEST(AllocatorBaseTest, UpperBound2sComponentTest)

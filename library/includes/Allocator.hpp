@@ -3,6 +3,8 @@
 #include <Buddy.hpp>
 #include <concepts>
 
+namespace Callisto
+{
 class Allocator
 {
 public:
@@ -99,4 +101,5 @@ public:
         return *this;
     }
 };
+}
 #endif
