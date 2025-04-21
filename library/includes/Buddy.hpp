@@ -1,5 +1,5 @@
-#ifndef BUDDY_HPP_
-#define BUDDY_HPP_
+#ifndef CALLISTO_BUDDY_HPP_
+#define CALLISTO_BUDDY_HPP_
 #include <AllocatorBase.hpp>
 #include <ranges>
 #include <algorithm>

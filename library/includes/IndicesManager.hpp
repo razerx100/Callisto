@@ -1,5 +1,5 @@
-#ifndef INDICES_MANAGER_HPP_
-#define INDICES_MANAGER_HPP_
+#ifndef CALLISTO_INDICES_MANAGER_HPP_
+#define CALLISTO_INDICES_MANAGER_HPP_
 #include <ranges>
 #include <algorithm>
 #include <vector>

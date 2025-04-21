@@ -1,5 +1,5 @@
-#ifndef ALLOCATOR_BASE_HPP_
-#define ALLOCATOR_BASE_HPP_
+#ifndef CALLISTO_ALLOCATOR_BASE_HPP_
+#define CALLISTO_ALLOCATOR_BASE_HPP_
 #include <array>
 #include <vector>
 #include <optional>

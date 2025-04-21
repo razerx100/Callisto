@@ -1,5 +1,5 @@
-#ifndef REUSABLE_VECTOR_HPP_
-#define REUSABLE_VECTOR_HPP_
+#ifndef CALLISTO_REUSABLE_VECTOR_HPP_
+#define CALLISTO_REUSABLE_VECTOR_HPP_
 #include <vector>
 #include <deque>
 #include <type_traits>

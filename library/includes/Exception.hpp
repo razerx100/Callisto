@@ -1,5 +1,5 @@
-#ifndef EXCEPTION_HPP_
-#define EXCEPTION_HPP_
+#ifndef CALLISTO_EXCEPTION_HPP_
+#define CALLISTO_EXCEPTION_HPP_
 #include <exception>
 #include <string>
 

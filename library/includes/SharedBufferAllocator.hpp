@@ -1,5 +1,5 @@
-#ifndef SHARED_BUFFER_ALLOCATOR_HPP_
-#define SHARED_BUFFER_ALLOCATOR_HPP_
+#ifndef CALLISTO_SHARED_BUFFER_ALLOCATOR_HPP_
+#define CALLISTO_SHARED_BUFFER_ALLOCATOR_HPP_
 #include <cstdint>
 #include <vector>
 #include <optional>

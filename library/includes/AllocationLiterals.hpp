@@ -1,5 +1,5 @@
-#ifndef ALLOCATION_LITERALS_HPP_
-#define ALLOCATION_LITERALS_HPP_
+#ifndef CALLISTO_ALLOCATION_LITERALS_HPP_
+#define CALLISTO_ALLOCATION_LITERALS_HPP_
 #include <cstdint>
 
 constexpr size_t operator"" _B(unsigned long long number) noexcept
